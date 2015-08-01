@@ -3,7 +3,7 @@
 const World3D = require('verlet-system/3d');
 const Constraint3D = require('verlet-constraint/3d'); 
 const Point3D = require('verlet-point/3d');
-const dt = 0.016;
+const dt = 0.05;
 
 module.exports = function MyVerlet(three) {
 
@@ -41,15 +41,18 @@ module.exports = function MyVerlet(three) {
 		return p;
 	};
 
+	const roomSize = 10;
+
 	this.world = new World3D({ 
 		gravity: [0, -9.8, 0],
-		min: [-100, -100, -100],
-		max: [100, 100, 100]
+		min: [-roomSize, -roomSize, -roomSize],
+		max: [roomSize, roomSize, roomSize]
 	});
 
-	requestAnimationFrame(function () {
+	requestAnimationFrame(function animate() {
 		this.world.integrate(Array.from(this.points).map(p => p.verletPoint), dt);
 		this.points.forEach(point => point.sync());
+		requestAnimationFrame(animate.bind(this));
 	}.bind(this));
 
 };
