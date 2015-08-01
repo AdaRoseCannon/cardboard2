@@ -16,12 +16,12 @@ function MyThree() {
 	renderer.setClearColor( scene.fog.color );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
-	document.body.appendChild( renderer.domElement );
+	document.body.appendChild(renderer.domElement);
 
 	function addSphere(radius = 1) {
-		const geometry = new THREE.SphereGeometry( radius, 8, 5 );
-		const material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-		const mesh = new THREE.Mesh( geometry, material );
+		const geometry = new THREE.SphereGeometry(radius, 8, 5);
+		const material = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+		const mesh = new THREE.Mesh(geometry, material);
 		scene.add(mesh);
 		return mesh;
 	}
@@ -29,8 +29,8 @@ function MyThree() {
 	function animate() {
 
 		// note: three.js includes requestAnimationFrame shim 
-		requestAnimationFrame( animate );
-		renderer.render( scene, camera );
+		requestAnimationFrame(animate);
+		renderer.render(scene, camera);
 	}
 
 	this.animate = animate;

@@ -1,3 +1,4 @@
+/* global THREE */
 'use strict';
 
 require('babel/polyfill');
@@ -23,7 +24,19 @@ Promise.all([
 	const verlet = new MyVerlet(three);
 	three.animate();
 	verlet.addPoint({
-		threePoint: new THREE.Vector3(0, 0, 0),
+		threePoint: new THREE.Vector3(Math.random(), 0, 0),
+		radius: 3,
+		mass: 1,
+		charge: 0
+	});
+	verlet.addPoint({
+		threePoint: new THREE.Vector3(Math.random(), 10, 0),
+		radius: 3,
+		mass: 1,
+		charge: 0
+	});
+	verlet.addPoint({
+		threePoint: new THREE.Vector3(Math.random(), 20, 0),
 		radius: 3,
 		mass: 1,
 		charge: 0

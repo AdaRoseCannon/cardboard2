@@ -42,6 +42,7 @@
     }
   },
   "dependencies": {
+    "gl-vec3": "^1.0.3",
     "verlet-constraint": "^1.0.3",
     "verlet-point": "^1.2.1"
   }
