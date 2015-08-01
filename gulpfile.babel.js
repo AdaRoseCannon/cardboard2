@@ -4,7 +4,6 @@ import gulp from 'gulp';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import browserSync from 'browser-sync';
 import del from 'del';
-import {stream as wiredep} from 'wiredep';
 import {mkdirSync, statSync, readdirSync, createWriteStream} from 'fs';
 import browserify from 'browserify';
 import babelify from 'babelify';
@@ -194,7 +193,7 @@ gulp.task('serve', ['styles', 'browserify', 'fonts'], () => {
 
 	gulp.watch('app/styles/**/*.scss', ['styles']);
 	gulp.watch('app/fonts/**/*', ['fonts']);
-	gulp.watch('bower.json', ['wiredep', 'fonts']);
+	gulp.watch('bower.json', ['fonts']);
 	gulp.watch('app/scripts/**/*.js', ['browserify']);
 });
 
@@ -223,21 +222,6 @@ gulp.task('serve:test', () => {
 
 	gulp.watch('test/spec/**/*.js').on('change', reload);
 	gulp.watch('test/spec/**/*.js', ['lint:test']);
-});
-
-// inject bower components
-gulp.task('wiredep', () => {
-	gulp.src('app/styles/*.scss')
-		.pipe(wiredep({
-			ignorePath: /^(\.\.\/)+/
-		}))
-		.pipe(gulp.dest('app/styles'));
-
-	gulp.src('app/*.html')
-		.pipe(wiredep({
-			ignorePath: /^(\.\.\/)*\.\./
-		}))
-		.pipe(gulp.dest('app'));
 });
 
 gulp.task('ship', function () {

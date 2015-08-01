@@ -26,7 +26,8 @@
     "gulp-useref": "^1.1.1",
     "main-bower-files": "^2.5.0",
     "opn": "^1.0.1",
-    "wiredep": "^2.2.2"
+    "three": "^0.71.0",
+    "verlet-system": "^1.0.15"
   },
   "eslintConfig": {
     "env": {
@@ -39,5 +40,9 @@
         "single"
       ]
     }
+  },
+  "dependencies": {
+    "verlet-constraint": "^1.0.3",
+    "verlet-point": "^1.2.1"
   }
 }
