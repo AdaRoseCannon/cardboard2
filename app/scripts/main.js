@@ -1,4 +1,4 @@
-/* global THREE */
+/*global THREE*/
 'use strict';
 
 require('babel/polyfill');
@@ -17,28 +17,20 @@ function addScript(url) {
 
 Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
-	addScript('http://threejs.org/build/three.min.js')
+	addScript('http://threejs.org/build/three.min.js'),
+	addScript('https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js')
 ]).then(function () {
 	console.log('Ready');
 	const three = new MyThree();
 	const verlet = new MyVerlet(three);
 	three.animate();
-	verlet.addPoint({
-		threePoint: new THREE.Vector3(Math.random(), 0, 0),
-		radius: 3,
-		mass: 1,
-		charge: 0
-	});
-	verlet.addPoint({
-		threePoint: new THREE.Vector3(Math.random(), 10, 0),
-		radius: 3,
-		mass: 1,
-		charge: 0
-	});
-	verlet.addPoint({
-		threePoint: new THREE.Vector3(Math.random(), 20, 0),
-		radius: 3,
-		mass: 1,
-		charge: 0
-	});
+	setInterval(() => {
+		verlet.addPoint({
+			threePoint: new THREE.Vector3(0, 0, 0),
+			velocity: new THREE.Vector3(Math.random() - 0.5, Math.random(), Math.random() - 0.5),
+			radius: 3 + 3 * Math.random(),
+			mass: 1,
+			charge: 0
+		});
+	}, 1000);
 });

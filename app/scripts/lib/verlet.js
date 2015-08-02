@@ -6,16 +6,17 @@ const Point3D = require('verlet-point/3d');
 const timeFactor = 10;
 const vec3 = {
     create: require('gl-vec3/create'),
-    // add: require('gl-vec3/add'),
+    add: require('gl-vec3/add'),
     // dot: require('gl-vec3/dot'),
     subtract: require('gl-vec3/subtract'),
     scale: require('gl-vec3/scale'),
-    distance: require('gl-vec3/distance')
+    distance: require('gl-vec3/distance'),
+    length: require('gl-vec3/length')
 };
 
-(new Point3D()).constructor.prototype.intersects = function (p) {
-	return vec3.distance(this.position, p.position) <= this.radius + p.radius;
-}
+const p3DPrototype = (new Point3D()).constructor.prototype;
+p3DPrototype.intersects = function (p) { return vec3.distance(this.position, p.position) <= this.radius + p.radius; };
+p3DPrototype.distanceFrom = function (p) { return vec3.distance(this.position, p.position); };
 
 module.exports = function MyVerlet(three) {
 
@@ -24,7 +25,8 @@ module.exports = function MyVerlet(three) {
 			threePoint,
 			radius,
 			mass,
-			charge
+			charge,
+			velocity
 		}) {
 			this.threePoint = threePoint;
 			this.radius = radius;
@@ -37,7 +39,7 @@ module.exports = function MyVerlet(three) {
 				mass,
 				radius,
 				charge
-			});
+			}).addForce([ velocity.x, velocity.y, velocity.z ]);
 		}
 
 		sync () {
@@ -46,6 +48,7 @@ module.exports = function MyVerlet(three) {
 	}
 
 	this.points = new Set();
+	this.constraints = new Set();
 
 	this.addPoint = options => {
 		const p = new VerletThreePoint(options);
@@ -53,7 +56,18 @@ module.exports = function MyVerlet(three) {
 		return p;
 	};
 
+	this.connect = (p1, p2, options) => {
+		if (!options) options = {
+			stiffness: 0.05,
+			restingDistance: p1.radius + p2.radius
+		};
+
+		const c = new Constraint3D([p1, p2], options);
+		return c;
+	};
+
 	const roomSize = 50;
+	three.addRoom(roomSize * 2, roomSize * 2, roomSize * 2);
 
 	this.world = new World3D({ 
 		gravity: [0, -9.8, 0],
@@ -69,20 +83,24 @@ module.exports = function MyVerlet(three) {
 		const vP = Array.from(this.points).map(p => p.verletPoint);
 		const l = vP.length;
 
-		// Perform collisions
-		for(let i=0; i<l; i++) {
-			for(let j=0; j<i; j++) {
+		this.constraints.forEach(c => c.solve());
+
+		// Perform collisions super simple and naive
+		const tempVec = vec3.create([0, 0, 0]);
+		for (let i = 0; i < l; i++) {
+			for (let j=0; j<i; j++) {
 				let p1 = vP[i], p2 = vP[j];
+
 				if (p1.intersects(p2)) {
-					const diff = vec3.create([0,0,0]);
-					vec3.subtract(diff, p1.position, p2.position);
-					vec3.scale(diff, diff, 0.1);
-					p1.addForce(diff);
-					vec3.scale(diff, diff, -1);
-					p2.addForce(diff);
+					vec3.subtract(tempVec, p1.position, p2.position);
+					vec3.scale(tempVec, tempVec, 0.1*vec3.distance(p1.position, p2.position)/Math.pow(vec3.length(tempVec), 2));
+
+					vec3.add(p1.position, p1.position, tempVec);
+					vec3.subtract(p2.position, p2.position, tempVec);
 				}
 			}
 		}
+
 		this.world.integrate(vP, dT * timeFactor);
 		this.points.forEach(point => point.sync());
 		requestAnimationFrame(animate.bind(this));

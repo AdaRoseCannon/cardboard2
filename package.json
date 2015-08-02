@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "gl-vec3": "^1.0.3",
+    "three-orbit-controls": "^69.0.5",
     "verlet-constraint": "^1.0.3",
     "verlet-point": "^1.2.1"
   }
