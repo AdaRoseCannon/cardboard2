@@ -18,23 +18,22 @@ const p3DPrototype = (new Point3D()).constructor.prototype;
 p3DPrototype.intersects = function (p) { return vec3.distance(this.position, p.position) <= this.radius + p.radius; };
 p3DPrototype.distanceFrom = function (p) { return vec3.distance(this.position, p.position); };
 
-module.exports = function MyVerlet() {
+module.exports = function MyVerlet(size) {
 
 	class VerletThreePoint {
 		constructor({
-			threePoint,
+			position,
 			radius,
 			mass,
 			charge,
 			velocity
 		}) {
-			this.threePoint = threePoint;
 			this.radius = radius;
 			this.mass = mass;
 			this.charge = charge;
 
 			this.verletPoint = new Point3D({
-				position: [ threePoint.x, threePoint.y, threePoint.z ],
+				position: [ position.x, position.y, position.z ],
 				mass,
 				radius,
 				charge
@@ -42,12 +41,12 @@ module.exports = function MyVerlet() {
 		}
 	}
 
-	this.points = new Set();
+	this.points = [];
 	this.constraints = new Set();
 
 	this.addPoint = options => {
 		const p = new VerletThreePoint(options);
-		this.points.add(p);
+		this.points.push(p);
 		return p;
 	};
 
@@ -61,20 +60,21 @@ module.exports = function MyVerlet() {
 		return c;
 	};
 
-	this.size = 50;
+	this.size = size;
 
 	this.world = new World3D({ 
 		gravity: [0, -9.8, 0],
-		min: [-this.size, -this.size, -this.size],
-		max: [this.size, this.size, this.size],
+		min: [-this.size.x/2, -this.size.y/2, -this.size.z/2],
+		max: [this.size.x/2, this.size.y/2, this.size.z/2],
 		friction: 0.98
 	});
 
 	let oldT = 0;
-	requestAnimationFrame(function animate(t) {
 
+	this.animate = function animate() {
+		const t = Date.now();
 		const dT = Math.min(0.032, (t - oldT) / 1000);
-		const vP = Array.from(this.points).map(p => p.verletPoint);
+		const vP = this.points.map(p => p.verletPoint);
 		const l = vP.length;
 
 		this.constraints.forEach(c => c.solve());
@@ -96,8 +96,7 @@ module.exports = function MyVerlet() {
 		}
 
 		this.world.integrate(vP, dT * timeFactor);
-		requestAnimationFrame(animate.bind(this));
 		oldT = t;
-	}.bind(this));
+	};
 
 };

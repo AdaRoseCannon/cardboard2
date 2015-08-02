@@ -61,8 +61,7 @@ function MyThree() {
 
 	function animate() {
 
-		// note: three.js includes requestAnimationFrame shim 
-		requestAnimationFrame(animate);
+		// note: three.js includes requestAnimationFrame shim
 		renderer.render(scene, camera);
 	}
 

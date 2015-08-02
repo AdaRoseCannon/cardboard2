@@ -1,9 +1,7 @@
 /*global THREE*/
 'use strict';
-
-require('babel/polyfill');
 const MyThree = require('./lib/three');
-const MyVerlet = require('./lib/verlet');
+const VerletWrapper = require('./lib/verletwrapper');
 
 function addScript(url) {
 	return new Promise(function (resolve, reject) {
@@ -17,62 +15,81 @@ function addScript(url) {
 
 Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
-	addScript('http://threejs.org/build/three.min.js'),
-	addScript('https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js')
+	addScript('http://threejs.org/build/three.min.js')
 ]).then(function () {
 	console.log('Ready');
 	const three = new MyThree();
-	const verlet = new MyVerlet(three, true);
-	three.animate();
+	const verlet = new VerletWrapper();
+	
+	verlet.init({
+		x: 150,
+		y: 150,
+		z: 150
+	})
+	.then(function setUpMarching() {
 
-	(function setUpMarching() {
-
-		require('./lib/marching.js');
-		const resolution = 28;
+		require('./lib/marching');
 
 		// MARCHING CUBES
 
-		const effect = new THREE.MarchingCubes(resolution, three.materials.shiny, true, true );
+		const effect = new THREE.MarchingCubes({
+			resolution: 20,
+			material: three.materials.shiny,
+			enableUvs: false,
+			enableColors: false,
+			dimensions: verlet.size
+		});
+
 		effect.position.set( 0, 0, 0 );
-		effect.scale.set( verlet.size, verlet.size, verlet.size );
+		effect.scale.set( verlet.size.x / 1.8, verlet.size.y /1.8, verlet.size.z / 1.8 );
 
 		three.scene.add(effect);
 
-		three.addRoom(verlet.size * 2, verlet.size * 2, verlet.size * 2);
+		three.addRoom(verlet.size.x, verlet.size.y, verlet.size.z);
 
-		(function updateCubes() {
-			effect.reset();
+		function updateCubes() {
+			verlet.getPoints().then(points => {
+				effect.reset();
 
-			// fill the field with some metaballs
+				// fill the field with some metaballs
 
-			var i, ballx, bally, ballz, subtract, strength;
-			var time = 0;
+				var i, ballx, bally, ballz, subtract, strength;
 
-			subtract = 12;
-			strength = 1.2 / ( ( Math.sqrt( verlet.points.size ) - 1 ) / 4 + 1 );
+				subtract = 5;
+				strength = 1.2 / ( ( Math.sqrt( points.length ) - 1 ) / 4 + 1 );
 
 
-			// fill the field with some metaballs
-			for ( i of verlet.points ) {
-				ballx = (verlet.size + i.verletPoint.position[0]) / (verlet.size * 2);
-				bally = (verlet.size + i.verletPoint.position[1]) / (verlet.size * 2);
-				ballz = (verlet.size + i.verletPoint.position[2]) / (verlet.size * 2);
+				// fill the field with some metaballs
+				for ( i of points ) {
+					ballx = i.position[0] / verlet.size.x + 0.5;
+					bally = i.position[1] / verlet.size.y + 0.5;
+					ballz = i.position[2] / verlet.size.z + 0.5;
 
-				effect.addBall(ballx, bally, ballz, 3*i.radius/verlet.size, subtract);
-			}
+					// console.log([ballx, bally, ballz], i.position);
 
-			requestAnimationFrame(updateCubes);
-		})();
+					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/verlet.size.x, subtract);
+				}
 
-	})();
-
-	setInterval(() => {
-		verlet.addPoint({
-			threePoint: new THREE.Vector3(0, 0, 0),
-			velocity: new THREE.Vector3(Math.random() - 0.5, Math.random(), Math.random() - 0.5),
-			radius: 3 + 3 * Math.random(),
-			mass: 1,
-			charge: 0
+				three.animate();
+			});
+		}
+		
+		requestAnimationFrame(function animate() {
+			updateCubes();
+			requestAnimationFrame(animate);
 		});
-	}, 1000);
+
+		let i = 0;
+		setInterval(() => {
+
+			if (i++ < 32) verlet.addPoint({
+				position: {x: 0, y: 0, z: 0},
+				velocity: {x: 4 * (Math.random() - 0.5), y: Math.random(), z: 4 * (Math.random() - 0.5)},
+				radius: 16,
+				mass: 1,
+				charge: 0
+			});
+		}, 500);
+
+	});
 });

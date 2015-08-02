@@ -1,11 +1,16 @@
+/*global THREE*/
+'use strict';
+
 /**
  * @author alteredq / http://alteredqualia.com/
  *
  * Port of greggman's ThreeD version of marching cubes to Three.js
  * http://webglsamples.googlecode.com/hg/blob/blob.html
+ *
+ * Tweaked by Ada Rose Edwards
  */
 
-THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors ) {
+THREE.MarchingCubes = function ( {resolution, material, enableUvs, enableColors, dimensions} ) {
 
 	THREE.ImmediateRenderObject.call( this );
 
@@ -180,7 +185,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 
 		// if cube is entirely in/out of the surface - bail, nothing to draw
 
-		var bits = THREE.edgeTable[ cubeindex ];
+		var bits = edgeTable[ cubeindex ];
 		if ( bits === 0 ) return 0;
 
 		var d = this.delta,
@@ -196,7 +201,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1 );
 			this.VIntX( q * 3, this.vlist, this.nlist, 0, isol, fx, fy, fz, field0, field1 );
 
-		};
+		}
 
 		if ( bits & 2 ) {
 
@@ -204,7 +209,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1y );
 			this.VIntY( q1 * 3, this.vlist, this.nlist, 3, isol, fx2, fy, fz, field1, field3 );
 
-		};
+		}
 
 		if ( bits & 4 ) {
 
@@ -212,7 +217,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1y );
 			this.VIntX( qy * 3, this.vlist, this.nlist, 6, isol, fx, fy2, fz, field2, field3 );
 
-		};
+		}
 
 		if ( bits & 8 ) {
 
@@ -220,7 +225,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( qy );
 			this.VIntY( q * 3, this.vlist, this.nlist, 9, isol, fx, fy, fz, field0, field2 );
 
-		};
+		}
 
 		// bottom of the cube
 
@@ -230,7 +235,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1z );
 			this.VIntX( qz * 3, this.vlist, this.nlist, 12, isol, fx, fy, fz2, field4, field5 );
 
-		};
+		}
 
 		if ( bits & 32 ) {
 
@@ -238,7 +243,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1yz );
 			this.VIntY( q1z * 3,  this.vlist, this.nlist, 15, isol, fx2, fy, fz2, field5, field7 );
 
-		};
+		}
 
 		if ( bits & 64 ) {
 
@@ -246,7 +251,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1yz );
 			this.VIntX( qyz * 3, this.vlist, this.nlist, 18, isol, fx, fy2, fz2, field6, field7 );
 
-		};
+		}
 
 		if ( bits & 128 ) {
 
@@ -254,7 +259,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( qyz );
 			this.VIntY( qz * 3,  this.vlist, this.nlist, 21, isol, fx, fy, fz2, field4, field6 );
 
-		};
+		}
 
 		// vertical lines of the cube
 
@@ -264,7 +269,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( qz );
 			this.VIntZ( q * 3, this.vlist, this.nlist, 24, isol, fx, fy, fz, field0, field4 );
 
-		};
+		}
 
 		if ( bits & 512 ) {
 
@@ -272,7 +277,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1z );
 			this.VIntZ( q1 * 3,  this.vlist, this.nlist, 27, isol, fx2, fy,  fz, field1, field5 );
 
-		};
+		}
 
 		if ( bits & 1024 ) {
 
@@ -280,7 +285,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( q1yz );
 			this.VIntZ( q1y * 3, this.vlist, this.nlist, 30, isol, fx2, fy2, fz, field3, field7 );
 
-		};
+		}
 
 		if ( bits & 2048 ) {
 
@@ -288,7 +293,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 			this.compNorm( qyz );
 			this.VIntZ( qy * 3, this.vlist, this.nlist, 33, isol, fx,  fy2, fz, field2, field6 );
 
-		};
+		}
 
 		cubeindex <<= 4;  // re-purpose cubeindex into an offset into triTable
 
@@ -296,16 +301,16 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 
 		// here is where triangles are created
 
-		while ( THREE.triTable[ cubeindex + i ] != -1 ) {
+		while ( triTable[ cubeindex + i ] !== -1 ) {
 
 			o1 = cubeindex + i;
 			o2 = o1 + 1;
 			o3 = o1 + 2;
 
 			this.posnormtriv( this.vlist, this.nlist,
-							  3 * THREE.triTable[ o1 ],
-							  3 * THREE.triTable[ o2 ],
-							  3 * THREE.triTable[ o3 ],
+							  3 * triTable[ o1 ],
+							  3 * triTable[ o2 ],
+							  3 * triTable[ o3 ],
 							  renderCallback );
 
 			i += 3;
@@ -467,8 +472,10 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 		// radius^2 = strength / subtract
 		// radius = sqrt(strength / subtract)
 
-		var radius = this.size * Math.sqrt( strength / subtract ),
-			zs = ballz * this.size,
+
+		var radius = this.size * Math.sqrt( strength / subtract );
+		// var strength = Math.pow(radius/this.size, 2) * sub
+		var zs = ballz * this.size,
 			ys = bally * this.size,
 			xs = ballx * this.size;
 
@@ -762,7 +769,7 @@ THREE.MarchingCubes.prototype.constructor = THREE.MarchingCubes;
 // http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
 // who in turn got them from Cory Gene Bloyd.
 
-THREE.edgeTable = new Int32Array([
+const edgeTable = new Int32Array([
 0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
 0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
 0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
@@ -794,9 +801,9 @@ THREE.edgeTable = new Int32Array([
 0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
 0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
 0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
-0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0 ])
+0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0 ]);
 
-THREE.triTable = new Int32Array([
+const triTable = new Int32Array([
 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
