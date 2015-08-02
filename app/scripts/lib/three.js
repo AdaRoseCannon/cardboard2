@@ -41,10 +41,11 @@ function MyThree() {
 	const reflectionCube = THREE.ImageUtils.loadTextureCube( urls );
 	reflectionCube.format = THREE.RGBFormat;
 
+	const shinyMaterial = new THREE.MeshLambertMaterial( { color: 0x99ff99, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } );
+	const boringMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000, side: THREE.BackSide } );
 	function addSphere(radius = 1) {
 		const geometry = new THREE.SphereGeometry(radius, 8, 5);
-		const material = new THREE.MeshLambertMaterial( { color: 0x550000, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } );
-		const mesh = new THREE.Mesh(geometry, material);
+		const mesh = new THREE.Mesh(geometry, shinyMaterial);
 		scene.add(mesh);
 		return mesh;
 	}
@@ -52,12 +53,8 @@ function MyThree() {
 	function addRoom(...geom) {
 
 		const geometry = new THREE.BoxGeometry(...geom);
-		const material = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000, side: THREE.BackSide } );
-		// var mS = (new THREE.Matrix4()).identity();
-		// mS.elements[0] = -1;
-		// geometry.applyMatrix(mS);
 
-		const mesh = new THREE.Mesh(geometry, material);
+		const mesh = new THREE.Mesh(geometry, boringMaterial);
 		scene.add(mesh);
 		return mesh;
 	}
@@ -72,6 +69,11 @@ function MyThree() {
 	this.animate = animate;
 	this.addSphere = addSphere;
 	this.addRoom = addRoom;
+	this.scene = scene;
+	this.materials = {
+		shiny: shinyMaterial,
+		boring: boringMaterial
+	};
 	events.EventEmitter.call(this);
 }
 

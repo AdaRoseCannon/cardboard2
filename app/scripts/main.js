@@ -22,8 +22,50 @@ Promise.all([
 ]).then(function () {
 	console.log('Ready');
 	const three = new MyThree();
-	const verlet = new MyVerlet(three);
+	const verlet = new MyVerlet(three, true);
 	three.animate();
+
+	(function setUpMarching() {
+
+		require('./lib/marching.js');
+		const resolution = 28;
+
+		// MARCHING CUBES
+
+		const effect = new THREE.MarchingCubes(resolution, three.materials.shiny, true, true );
+		effect.position.set( 0, 0, 0 );
+		effect.scale.set( verlet.size, verlet.size, verlet.size );
+
+		three.scene.add(effect);
+
+		three.addRoom(verlet.size * 2, verlet.size * 2, verlet.size * 2);
+
+		(function updateCubes() {
+			effect.reset();
+
+			// fill the field with some metaballs
+
+			var i, ballx, bally, ballz, subtract, strength;
+			var time = 0;
+
+			subtract = 12;
+			strength = 1.2 / ( ( Math.sqrt( verlet.points.size ) - 1 ) / 4 + 1 );
+
+
+			// fill the field with some metaballs
+			for ( i of verlet.points ) {
+				ballx = (verlet.size + i.verletPoint.position[0]) / (verlet.size * 2);
+				bally = (verlet.size + i.verletPoint.position[1]) / (verlet.size * 2);
+				ballz = (verlet.size + i.verletPoint.position[2]) / (verlet.size * 2);
+
+				effect.addBall(ballx, bally, ballz, 3*i.radius/verlet.size, subtract);
+			}
+
+			requestAnimationFrame(updateCubes);
+		})();
+
+	})();
+
 	setInterval(() => {
 		verlet.addPoint({
 			threePoint: new THREE.Vector3(0, 0, 0),

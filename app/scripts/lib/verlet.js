@@ -18,7 +18,7 @@ const p3DPrototype = (new Point3D()).constructor.prototype;
 p3DPrototype.intersects = function (p) { return vec3.distance(this.position, p.position) <= this.radius + p.radius; };
 p3DPrototype.distanceFrom = function (p) { return vec3.distance(this.position, p.position); };
 
-module.exports = function MyVerlet(three) {
+module.exports = function MyVerlet() {
 
 	class VerletThreePoint {
 		constructor({
@@ -33,17 +33,12 @@ module.exports = function MyVerlet(three) {
 			this.mass = mass;
 			this.charge = charge;
 
-			this.threeModel = three.addSphere(this.radius);
 			this.verletPoint = new Point3D({
 				position: [ threePoint.x, threePoint.y, threePoint.z ],
 				mass,
 				radius,
 				charge
 			}).addForce([ velocity.x, velocity.y, velocity.z ]);
-		}
-
-		sync () {
-			this.threeModel.position.set(...this.verletPoint.position);
 		}
 	}
 
@@ -66,13 +61,12 @@ module.exports = function MyVerlet(three) {
 		return c;
 	};
 
-	const roomSize = 50;
-	three.addRoom(roomSize * 2, roomSize * 2, roomSize * 2);
+	this.size = 50;
 
 	this.world = new World3D({ 
 		gravity: [0, -9.8, 0],
-		min: [-roomSize, -roomSize, -roomSize],
-		max: [roomSize, roomSize, roomSize],
+		min: [-this.size, -this.size, -this.size],
+		max: [this.size, this.size, this.size],
 		friction: 0.98
 	});
 
@@ -102,7 +96,6 @@ module.exports = function MyVerlet(three) {
 		}
 
 		this.world.integrate(vP, dT * timeFactor);
-		this.points.forEach(point => point.sync());
 		requestAnimationFrame(animate.bind(this));
 		oldT = t;
 	}.bind(this));
