@@ -19,7 +19,9 @@ self.addEventListener('message', function(event) {
 					verlet.animate();
 					event.data.points = verlet.points.map(p => ({
 						radius: p.radius,
-						position: p.verletPoint.position
+						position: p.verletPoint.position,
+						meta: p.meta,
+						id: p.id
 					}));
 					return;
 

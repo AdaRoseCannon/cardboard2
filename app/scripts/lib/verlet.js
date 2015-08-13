@@ -26,11 +26,13 @@ module.exports = function MyVerlet(size) {
 			radius,
 			mass,
 			charge,
-			velocity
+			velocity,
+			meta
 		}) {
 			this.radius = radius;
 			this.mass = mass;
 			this.charge = charge;
+			this.meta = meta || {};
 
 			this.verletPoint = new Point3D({
 				position: [ position.x, position.y, position.z ],
@@ -46,7 +48,7 @@ module.exports = function MyVerlet(size) {
 
 	this.addPoint = options => {
 		const p = new VerletThreePoint(options);
-		this.points.push(p);
+		p.id = this.points.push(p);
 		return p;
 	};
 
@@ -64,8 +66,8 @@ module.exports = function MyVerlet(size) {
 
 	this.world = new World3D({ 
 		gravity: [0, -9.8, 0],
-		min: [-this.size.x/2, -this.size.y/2, -this.size.z/2],
-		max: [this.size.x/2, this.size.y/2, this.size.z/2],
+		min: [-this.size.x/2, 0, -this.size.z/2],
+		max: [this.size.x/2, this.size.y, this.size.z/2],
 		friction: 0.98
 	});
 

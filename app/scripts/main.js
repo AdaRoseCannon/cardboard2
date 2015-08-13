@@ -22,11 +22,13 @@ Promise.all([
 	const verlet = new VerletWrapper();
 	
 	verlet.init({
-		x: 450,
-		y: 450,
-		z: 450
+		x: 100,
+		y: 100,
+		z: 100
 	})
 	.then(function setUpMarching() {
+
+		const effectSize = 200;
 
 		require('./lib/marching');
 
@@ -37,21 +39,23 @@ Promise.all([
 			material: three.materials.shiny,
 			enableUvs: false,
 			enableColors: false,
-			dimensions: verlet.size
+			dimensions: effectSize
 		});
 
-		effect.position.set( 0, 0, 0 );
-		effect.scale.set( verlet.size.x / 2, verlet.size.y /2, verlet.size.z / 2 );
+		const effectsLayer = new THREE.Object3D();
 
-		three.camera.add(effect);
+		three.camera.add(effectsLayer);
 		three.camera.position.z = 300;
-		effect.position.z = -250;
+		effectsLayer.position.z = -effectSize;
+		effectsLayer.scale.set( effectSize, effectSize, effectSize );
 
-		// three.addRoom(verlet.size.x, verlet.size.y, verlet.size.z);
-		const grid = new THREE.GridHelper( 200, 10 );
-		grid.setColors( 0xffffff, 0xffffff );
+		effectsLayer.add(effect);
+
+		const grid = new THREE.GridHelper( 100, 10 );
+		grid.setColors( 0xff0000, 0xffffff );
 		three.scene.add( grid );
 
+		const balls = {};
 		function updateCubes() {
 			verlet.getPoints().then(points => {
 				effect.reset();
@@ -65,14 +69,26 @@ Promise.all([
 
 				// fill the field with some metaballs
 				for ( i of points ) {
-					let tV = new THREE.Vector3(i.position[0], i.position[1] + verlet.size.y/2, i.position[2]);
+					let tV = new THREE.Vector3(i.position[0], i.position[1], i.position[2]);
 					let nTV = effect.worldToLocal(tV);
 					ballx = nTV.x + 0.5;
 					bally = nTV.y + 0.5;
 					ballz = nTV.z + 0.5;
 
+					if (balls[i.id]) {
+						balls[i.id].position.x = nTV.x;
+						balls[i.id].position.y = nTV.y;
+						balls[i.id].position.z = nTV.z;
+					} else {
+						console.log(i);
+						balls[i.id] = three.addSphere(0.05);
+						effectsLayer.add(balls[i.id]);
+					}
+
+
+
 					// console.log(ballx, bally, ballz, nTV);
-					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/verlet.size.x, subtract);
+					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/effectSize, subtract);
 				}
 
 				// effect.addPlaneY(10, 2);
@@ -88,12 +104,15 @@ Promise.all([
 		let i = 0;
 		setInterval(() => {
 
-			if (i++ < 32) verlet.addPoint({
+			if (i++ < 4) verlet.addPoint({
 				position: {x: 0, y: 0, z: 0},
 				velocity: {x: 4 * (Math.random() - 0.5), y: Math.random(), z: 4 * (Math.random() - 0.5)},
-				radius: 16,
+				radius: 8,
 				mass: 1,
-				charge: 0
+				charge: 0,
+				meta: {
+					metaball: true
+				}
 			});
 		}, 500);
 

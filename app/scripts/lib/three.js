@@ -43,20 +43,17 @@ function MyThree() {
 	reflectionCube.format = THREE.RGBFormat;
 
 	const shinyMaterial = new THREE.MeshLambertMaterial( { color: 0x99ff99, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } );
-	const boringMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000, side: THREE.BackSide } );
+	const boringMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000 } );
 	function addSphere(radius = 1) {
 		const geometry = new THREE.SphereGeometry(radius, 8, 5);
 		const mesh = new THREE.Mesh(geometry, shinyMaterial);
-		scene.add(mesh);
 		return mesh;
 	}
 
 	function addRoom(...geom) {
 
 		const geometry = new THREE.BoxGeometry(...geom);
-
 		const mesh = new THREE.Mesh(geometry, boringMaterial);
-		scene.add(mesh);
 		return mesh;
 	}
 
