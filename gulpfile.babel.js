@@ -187,8 +187,7 @@ gulp.task('serve', ['styles', 'browserify', 'fonts'], () => {
 	gulp.watch([
 		'app/*.html',
 		'app/images/**/*',
-		'.tmp/fonts/**/*',
-		'.tmp/scripts/**/*',
+		'.tmp/fonts/**/*'
 	]).on('change', reload);
 
 	gulp.watch('app/styles/**/*.scss', ['styles']);
@@ -227,9 +226,9 @@ gulp.task('serve:test', () => {
 gulp.task('ship', function () {
 	return gulp.src('./dist/**/*')
 		.pipe(require('gulp-gh-pages')({
-			origin: 'https://git.heroku.com/ftlabs-six-degrees-404.git',
-			remoteUrl: 'https://git.heroku.com/ftlabs-six-degrees-404.git',
-			branch: 'master'
+			origin: 'git@github.com:AdaRoseEdwards/verlet.git',
+			remoteUrl: 'git@github.com:AdaRoseEdwards/verlet.git',
+			branch: 'gh-pages'
 		}));
 });
 

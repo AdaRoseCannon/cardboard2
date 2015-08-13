@@ -7,10 +7,11 @@ function MyThree() {
 
 	const OrbitControls = require('three-orbit-controls')(THREE);
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.z = 100;
 	new OrbitControls(camera);
 
 	const scene = new THREE.Scene();
+	scene.add(camera);
+
 	// scene.fog = new THREE.Fog( 0xcce0ff, 500, 10000 );
 
 	const renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -69,6 +70,7 @@ function MyThree() {
 	this.addSphere = addSphere;
 	this.addRoom = addRoom;
 	this.scene = scene;
+	this.camera = camera;
 	this.materials = {
 		shiny: shinyMaterial,
 		boring: boringMaterial

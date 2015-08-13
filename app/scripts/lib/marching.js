@@ -518,7 +518,7 @@ THREE.MarchingCubes = function ( {resolution, material, enableUvs, enableColors,
 
 	};
 
-	this.addPlaneX = function( pos, strength, subtract ) {
+	this.addPlaneX = function( strength, subtract ) {
 
 		var x, y, z, xx, val, xdiv, cxy,
 
@@ -558,7 +558,7 @@ THREE.MarchingCubes = function ( {resolution, material, enableUvs, enableColors,
 
 	};
 
-	this.addPlaneY = function( pos, strength, subtract ) {
+	this.addPlaneY = function( strength, subtract ) {
 
 		var x, y, z, yy, val, ydiv, cy, cxy,
 
@@ -597,7 +597,7 @@ THREE.MarchingCubes = function ( {resolution, material, enableUvs, enableColors,
 
 	};
 
-	this.addPlaneZ = function( pos, strength, subtract ) {
+	this.addPlaneZ = function( strength, subtract ) {
 
 		var x, y, z, zz, val, zdiv, cz, cyz,
 

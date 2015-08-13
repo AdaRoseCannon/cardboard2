@@ -22,9 +22,9 @@ Promise.all([
 	const verlet = new VerletWrapper();
 	
 	verlet.init({
-		x: 150,
-		y: 150,
-		z: 150
+		x: 450,
+		y: 450,
+		z: 450
 	})
 	.then(function setUpMarching() {
 
@@ -41,11 +41,16 @@ Promise.all([
 		});
 
 		effect.position.set( 0, 0, 0 );
-		effect.scale.set( verlet.size.x / 1.8, verlet.size.y /1.8, verlet.size.z / 1.8 );
+		effect.scale.set( verlet.size.x / 2, verlet.size.y /2, verlet.size.z / 2 );
 
-		three.scene.add(effect);
+		three.camera.add(effect);
+		three.camera.position.z = 300;
+		effect.position.z = -250;
 
-		three.addRoom(verlet.size.x, verlet.size.y, verlet.size.z);
+		// three.addRoom(verlet.size.x, verlet.size.y, verlet.size.z);
+		const grid = new THREE.GridHelper( 200, 10 );
+		grid.setColors( 0xffffff, 0xffffff );
+		three.scene.add( grid );
 
 		function updateCubes() {
 			verlet.getPoints().then(points => {
@@ -58,18 +63,19 @@ Promise.all([
 				subtract = 5;
 				strength = 1.2 / ( ( Math.sqrt( points.length ) - 1 ) / 4 + 1 );
 
-
 				// fill the field with some metaballs
 				for ( i of points ) {
-					ballx = i.position[0] / verlet.size.x + 0.5;
-					bally = i.position[1] / verlet.size.y + 0.5;
-					ballz = i.position[2] / verlet.size.z + 0.5;
+					let tV = new THREE.Vector3(i.position[0], i.position[1] + verlet.size.y/2, i.position[2]);
+					let nTV = effect.worldToLocal(tV);
+					ballx = nTV.x + 0.5;
+					bally = nTV.y + 0.5;
+					ballz = nTV.z + 0.5;
 
-					// console.log([ballx, bally, ballz], i.position);
-
+					// console.log(ballx, bally, ballz, nTV);
 					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/verlet.size.x, subtract);
 				}
 
+				// effect.addPlaneY(10, 2);
 				three.animate();
 			});
 		}
