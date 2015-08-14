@@ -43,10 +43,12 @@ Promise.all([
 		});
 
 		const effectsLayer = new THREE.Object3D();
+		const effectsPosition = new THREE.Object3D();
+		effectsPosition.position.z = -effectSize;
 
-		three.camera.add(effectsLayer);
+		three.scene.add(effectsLayer);
+		three.camera.add(effectsPosition);
 		three.camera.position.z = 300;
-		effectsLayer.position.z = -effectSize;
 		effectsLayer.scale.set( effectSize, effectSize, effectSize );
 
 		effectsLayer.add(effect);
@@ -59,46 +61,39 @@ Promise.all([
 		function updateCubes() {
 			verlet.getPoints().then(points => {
 				effect.reset();
+				let newP = effectsPosition.getWorldPosition();
+				effectsLayer.position.set(newP.x, newP.y, newP.z);
+				// effect.addPlaneY(10, 2);
 
 				// fill the field with some metaballs
-
-				var i, ballx, bally, ballz, subtract, strength;
-
-				subtract = 5;
-				strength = 1.2 / ( ( Math.sqrt( points.length ) - 1 ) / 4 + 1 );
-
-				// fill the field with some metaballs
-				for ( i of points ) {
+				var ballx, bally, ballz, subtract = 5;
+				for ( let i of points ) {
 					let tV = new THREE.Vector3(i.position[0], i.position[1], i.position[2]);
 					let nTV = effect.worldToLocal(tV);
-					ballx = nTV.x + 0.5;
-					bally = nTV.y + 0.5;
-					ballz = nTV.z + 0.5;
+					ballx = nTV.x/2 + 0.5;
+					bally = nTV.y/2 + 0.5;
+					ballz = nTV.z/2 + 0.5;
 
 					if (balls[i.id]) {
 						balls[i.id].position.x = nTV.x;
 						balls[i.id].position.y = nTV.y;
 						balls[i.id].position.z = nTV.z;
 					} else {
-						console.log(i);
-						balls[i.id] = three.addSphere(0.05);
+						console.log(i.radius);
+						balls[i.id] = three.addSphere(i.radius/effectSize);
 						effectsLayer.add(balls[i.id]);
 					}
 
-
-
 					// console.log(ballx, bally, ballz, nTV);
-					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/effectSize, subtract);
+					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/(effectSize * 2), subtract);
 				}
-
-				// effect.addPlaneY(10, 2);
-				three.animate();
 			});
 		}
 		
 		requestAnimationFrame(function animate() {
-			updateCubes();
 			requestAnimationFrame(animate);
+			updateCubes();
+			three.animate();
 		});
 
 		let i = 0;
