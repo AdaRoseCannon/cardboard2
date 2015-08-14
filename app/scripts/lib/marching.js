@@ -10,7 +10,7 @@
  * Tweaked by Ada Rose Edwards
  */
 
-THREE.MarchingCubes = function ( {resolution, material, enableUvs, enableColors, dimensions} ) {
+THREE.MarchingCubes = function ( {resolution, material, enableUvs, enableColors} ) {
 
 	THREE.ImmediateRenderObject.call( this );
 

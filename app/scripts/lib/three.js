@@ -44,9 +44,10 @@ function MyThree() {
 
 	const shinyMaterial = new THREE.MeshLambertMaterial( { color: 0x99ff99, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } );
 	const boringMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000 } );
+	const wireMaterial = new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } );
 	function addSphere(radius = 1) {
 		const geometry = new THREE.SphereGeometry(radius, 8, 5);
-		const mesh = new THREE.Mesh(geometry, shinyMaterial);
+		const mesh = new THREE.Mesh(geometry, wireMaterial);
 		return mesh;
 	}
 
@@ -70,7 +71,8 @@ function MyThree() {
 	this.camera = camera;
 	this.materials = {
 		shiny: shinyMaterial,
-		boring: boringMaterial
+		boring: boringMaterial,
+		wire: wireMaterial
 	};
 	events.EventEmitter.call(this);
 }

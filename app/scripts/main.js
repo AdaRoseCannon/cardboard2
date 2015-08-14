@@ -19,6 +19,12 @@ Promise.all([
 ]).then(function () {
 	console.log('Ready');
 	const three = new MyThree();
+	three.camera.position.z = 300;
+
+	const grid = new THREE.GridHelper( 100, 10 );
+	grid.setColors( 0xff0000, 0xffffff );
+	three.scene.add( grid );
+
 	const verlet = new VerletWrapper();
 	
 	verlet.init({
@@ -28,7 +34,7 @@ Promise.all([
 	})
 	.then(function setUpMarching() {
 
-		const effectSize = 200;
+		const effectSize = 100;
 
 		require('./lib/marching');
 
@@ -38,24 +44,17 @@ Promise.all([
 			resolution: 20,
 			material: three.materials.shiny,
 			enableUvs: false,
-			enableColors: false,
-			dimensions: effectSize
+			enableColors: false
 		});
 
 		const effectsLayer = new THREE.Object3D();
 		const effectsPosition = new THREE.Object3D();
-		effectsPosition.position.z = -effectSize;
+		effectsPosition.position.z = -1.2 * effectSize;
 
 		three.scene.add(effectsLayer);
 		three.camera.add(effectsPosition);
-		three.camera.position.z = 300;
 		effectsLayer.scale.set( effectSize, effectSize, effectSize );
-
 		effectsLayer.add(effect);
-
-		const grid = new THREE.GridHelper( 100, 10 );
-		grid.setColors( 0xff0000, 0xffffff );
-		three.scene.add( grid );
 
 		const balls = {};
 		function updateCubes() {
@@ -85,7 +84,7 @@ Promise.all([
 					}
 
 					// console.log(ballx, bally, ballz, nTV);
-					effect.addBall(ballx, bally, ballz, 0.1 + subtract * i.radius/(effectSize * 2), subtract);
+					effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.radius/effectSize), subtract);
 				}
 			});
 		}
@@ -99,7 +98,7 @@ Promise.all([
 		let i = 0;
 		setInterval(() => {
 
-			if (i++ < 4) verlet.addPoint({
+			if (i++ < 32) verlet.addPoint({
 				position: {x: 0, y: 0, z: 0},
 				velocity: {x: 4 * (Math.random() - 0.5), y: Math.random(), z: 4 * (Math.random() - 0.5)},
 				radius: 8,
