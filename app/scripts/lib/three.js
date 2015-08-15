@@ -98,7 +98,7 @@ function MyThree() {
 			// fill the field with some metaballs
 			var ballx, bally, ballz, subtract = 5;
 			for ( let i of points ) {
-				let tV = new THREE.Vector3(i.position[0], i.position[1], i.position[2]);
+				let tV = new THREE.Vector3(i.position.x, i.position.y, i.position.z);
 				let nTV = effect.worldToLocal(tV);
 				ballx = nTV.x/2 + 0.5;
 				bally = nTV.y/2 + 0.5;
@@ -108,6 +108,7 @@ function MyThree() {
 					balls[i.id].position.x = nTV.x;
 					balls[i.id].position.y = nTV.y;
 					balls[i.id].position.z = nTV.z;
+					balls[i.id].quaternion.set(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w);
 				} else {
 					balls[i.id] = addSphere(i.radius/effectSize);
 					effectsLayer.add(balls[i.id]);

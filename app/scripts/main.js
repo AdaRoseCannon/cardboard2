@@ -1,7 +1,7 @@
 /*global THREE*/
 'use strict';
 const MyThree = require('./lib/three');
-const VerletWrapper = require('./lib/verletwrapper');
+const PhysicsWrapper = require('./lib/physicswrapper');
 
 function addScript(url) {
 	return new Promise(function (resolve, reject) {
@@ -28,17 +28,13 @@ Promise.all([
 
 
 	// Run the verlet physics
-	const verlet = new VerletWrapper();
+	const physics = new PhysicsWrapper();
 
-	verlet.init({
-		x: 200,
-		y: 400,
-		z: 200
-	})
+	physics.init()
 	.then(function setUpMarching() {
-		
+
 		requestAnimationFrame(function animate() {
-			verlet.getPoints().then(points => {
+			physics.getPoints().then(points => {
 				three.metaballs.updatePoints(points);
 				three.animate();
 			});
@@ -48,11 +44,11 @@ Promise.all([
 		let i = 0;
 		setInterval(() => {
 
-			if (i++ < 32) verlet.addPoint({
+			if (i++ < 32) physics.addPoint({
 				position: {x: 0, y: 10, z: 0},
-				velocity: {x: 4 * (Math.random() - 0.5), y: 10 * Math.random(), z: 4 * (Math.random() - 0.5)},
-				radius: 8,
-				mass: 1,
+				velocity: {x: 4 * (Math.random() - 0.5), y: 4 * Math.random(), z: 4 * (Math.random() - 0.5)},
+				radius: 4,
+				mass: 10,
 				charge: 0,
 				meta: {
 					metaball: true

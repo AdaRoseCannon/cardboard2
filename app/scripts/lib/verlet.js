@@ -48,6 +48,7 @@ module.exports = function MyVerlet(size) {
 
 	this.addPoint = options => {
 		const p = new VerletThreePoint(options);
+
 		p.id = this.points.push(p);
 		return p;
 	};
