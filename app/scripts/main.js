@@ -2,16 +2,7 @@
 'use strict';
 const MyThree = require('./lib/three');
 const PhysicsWrapper = require('./lib/physicswrapper');
-
-function addScript(url) {
-	return new Promise(function (resolve, reject) {
-		var script = document.createElement('script');
-		script.setAttribute('src', url);
-		document.head.appendChild(script);
-		script.onload = resolve;
-		script.onerror = reject;
-	});
-}
+const addScript = require('./lib/loadScript');
 
 Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
@@ -34,10 +25,11 @@ Promise.all([
 	.then(function setUpMarching() {
 
 		requestAnimationFrame(function animate() {
-			physics.getPoints().then(points => {
-				three.metaballs.updatePoints(points);
-				three.animate();
-			});
+			physics.update()
+				.then(() => {
+					three.metaballs.updatePoints(physics.points);
+					three.animate();
+				});
 			requestAnimationFrame(animate);
 		});
 
@@ -56,5 +48,30 @@ Promise.all([
 			});
 		}, 500);
 
+		Promise.all([
+			three.addObject('box', 'boring').then(mesh => {
+				mesh.scale.set(10, 10, 10);
+				mesh.position.set(0, 50, 0);
+				return mesh;
+			}),
+			physics.addObject({
+				id: 'box',
+				position: {
+					x: 0,
+					y: 50,
+					z: 50
+				},
+				scale: 10,
+				mass: 1
+			})
+		])
+		.then(([mesh, meshPhysics]) => {
+			three.scene.add(mesh);
+			console.log(meshPhysics);
+			three.on('prerender', function sync() {
+				// Sync model to physics
+				
+			});
+		})
 	});
 });

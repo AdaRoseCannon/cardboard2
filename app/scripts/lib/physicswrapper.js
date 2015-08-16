@@ -30,15 +30,26 @@ function workerMessage(message) {
 
 class Physics {
 	init(size) {
+		this.points = [];
+		this.objects = [];
 		return workerMessage({action: 'init', size});
 	}
 
-	getPoints() {
-		return workerMessage({action: 'getPoints'}).then(e => e.points);
+	update() {
+		return workerMessage({action: 'getModelData'}).then(e => {
+			this.points.splice(0);
+			this.points.push.apply(this.points, e.points);
+			this.objects.splice(0);
+			this.objects.push.apply(this.objects, e.objects);
+		});
 	}
 
 	addPoint(pointOptions) {
 		return workerMessage({action: 'addPoint', pointOptions});
+	}
+
+	addObject(options) {
+		return workerMessage({action: 'addObject', options});
 	}
 }
 

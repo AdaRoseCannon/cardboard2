@@ -61,6 +61,17 @@ function MyThree() {
 		return mesh;
 	}
 
+	function addObject(id, material) {
+
+		const loader = new THREE.JSONLoader();
+		return new Promise(resolve => {
+			loader.load( "./models/" + id + ".json", geometry => {
+				const mesh = new THREE.Mesh( geometry, material && materials[material] ? materials[material] : materials.wireframe );
+				resolve(mesh);
+			});
+		});
+	}
+
 	function useMetaballs(effectSize = 100, debug = false) {
 		/*jshint validthis: true */
 		require('./marching');
@@ -137,6 +148,7 @@ function MyThree() {
 	this.animate = animate.bind(this);
 	this.addSphere = addSphere;
 	this.addRoom = addRoom;
+	this.addObject = addObject;
 	this.scene = scene;
 	this.camera = camera;
 	this.materials = materials;
