@@ -6,7 +6,6 @@ const fetchJSON = require('./lib/fetchJSON.js');
 const threeJSONLoader = require('./lib/threejsonloader');
 
 const world = new Cannon.World();
-const points = [];
 const customObjects = [];
 
 world.gravity.set(0, 0, -10);
@@ -36,7 +35,7 @@ function getObject({id, scale, mass}) {
 	if (!mass) mass = 0;
 	return fetchJSON('../models/' + id + '.json')
 	.then(models => {
-		const modelBody = new Cannon.Body({mass});
+		const modelBody = new Cannon.Body({ mass });
 		for(let i=0; i < models.length; i++){
 
 			const modelData = threeJSONLoader(models[i], scale);
@@ -52,18 +51,13 @@ function getObject({id, scale, mass}) {
 		}
 
 		// Create body
-		modelBody.quaternion.setFromAxisAngle(new Cannon.Vec3(1,0,0),-Math.PI/2);
+		modelBody.quaternion.setFromAxisAngle(new Cannon.Vec3(1,0,0), -Math.PI/2);
 		const z180 = new Cannon.Quaternion();
-		z180.setFromAxisAngle(new Cannon.Vec3(0,0,1),Math.PI);
+		z180.setFromAxisAngle(new Cannon.Vec3(0,0,1), Math.PI);
 		modelBody.quaternion = z180.mult(modelBody.quaternion);
 		return modelBody;
 	});
 }
-
-const groundMaterial = new Cannon.Material();
-const ballMaterial = new Cannon.Material();
-const contactMaterial = new Cannon.ContactMaterial(groundMaterial, ballMaterial, { friction: 0.0, restitution: 0.3 });
-world.addContactMaterial(contactMaterial);
 
 // Recieve messages from the client and reply back onthe same port
 self.addEventListener('message', function(event) {
@@ -73,23 +67,18 @@ self.addEventListener('message', function(event) {
 			let body;
 			switch(event.data.action) {
 				case 'init':
-					body = new Cannon.Body({ mass: 0, material: groundMaterial });
+
+
+					world.defaultContactMaterial.contactEquationStiffness = 5e7;
+					world.defaultContactMaterial.contactEquationRelaxation = 4;
+					body = new Cannon.Body({ mass: 0 });
 					body.addShape(new Cannon.Plane());
 					world.addBody(body);
 					return;
 
 				case 'getModelData':
 					animate();
-					event.data.points = points.map(p => ({
-						radius: p.shapes[0].radius,
-
-						// swap y,z for exporting
-						position: swapYZ(p.position),
-						quaternion: p.quaternion,
-						meta: p.meta,
-						id: p.id
-					}));
-					event.data.objects = customObjects.map(p => ({
+					event.data.modelData = customObjects.map(p => ({
 
 						// swap y,z for exporting
 						position: swapYZ(p.position),
@@ -100,17 +89,21 @@ self.addEventListener('message', function(event) {
 					return;
 
 				case 'addObject':
-
 					return getObject({
 						id: event.data.options.id,
 						scale: event.data.options.scale || 1,
 						mass: event.data.options.scale || 0
 					}).then(body => {
 						const p = swapYZ(event.data.options.position);
-						world.addBody(body);
-						body.position.set(p.x, p.z, p.y);
+						body.position.set(p.x, p.y, p.z);
 						event.data.id = body.id;
 						customObjects.push(body);
+						body.meta = event.data.options.meta || {};
+						body.meta.type = 'genericObject';
+						world.addBody(body);
+						body.addEventListener("collide", function(e){
+						    console.log("Contact between bodies:",e.contact);
+						});
 					});
 
 				case 'addPoint':
@@ -121,8 +114,11 @@ self.addEventListener('message', function(event) {
 					});
 					body.addShape(new Cannon.Sphere(event.data.pointOptions.radius));
 					world.addBody(body);
-					points.push(body);
-					body.meta = event.data.pointOptions;
+					customObjects.push(body);
+					body.meta = event.data.pointOptions.meta || {};
+					body.meta.type = 'point';
+					body.meta.radius = event.data.pointOptions.radius;
+
 					body.linearDamping = 0.01;
 					return;
 

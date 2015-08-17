@@ -27,12 +27,13 @@ Promise.all([
 		requestAnimationFrame(function animate() {
 			physics.update()
 				.then(() => {
-					three.metaballs.updatePoints(physics.points);
+					three.updateObjects(physics.objects);
 					three.animate();
 				});
 			requestAnimationFrame(animate);
 		});
 
+		// Add a new point every half second
 		let i = 0;
 		setInterval(() => {
 
@@ -59,19 +60,14 @@ Promise.all([
 				position: {
 					x: 0,
 					y: 50,
-					z: 50
+					z: 0
 				},
 				scale: 10,
 				mass: 1
 			})
 		])
 		.then(([mesh, meshPhysics]) => {
-			three.scene.add(mesh);
-			console.log(meshPhysics);
-			three.on('prerender', function sync() {
-				// Sync model to physics
-				
-			});
+			three.connectPhysicsToThree(mesh, meshPhysics);
 		})
 	});
 });

@@ -30,18 +30,15 @@ function workerMessage(message) {
 
 class Physics {
 	init(size) {
-		this.points = [];
 		this.objects = [];
 		return workerMessage({action: 'init', size});
 	}
 
 	update() {
-		return workerMessage({action: 'getModelData'}).then(e => {
-			this.points.splice(0);
-			this.points.push.apply(this.points, e.points);
+		return workerMessage({action: 'getModelData'}).then(function (e) {
 			this.objects.splice(0);
-			this.objects.push.apply(this.objects, e.objects);
-		});
+			this.objects.push.apply(this.objects, e.modelData);
+		}.bind(this));
 	}
 
 	addPoint(pointOptions) {

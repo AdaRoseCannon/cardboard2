@@ -5,6 +5,7 @@ const util = require('util');
 
 function MyThree() {
 
+	EventEmitter.call(this);
 	const OrbitControls = require('three-orbit-controls')(THREE);
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
 	new OrbitControls(camera);
@@ -12,11 +13,8 @@ function MyThree() {
 	const scene = new THREE.Scene();
 	scene.add(camera);
 
-	// scene.fog = new THREE.Fog( 0xcce0ff, 500, 10000 );
-
 	const renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
-	// renderer.setClearColor( scene.fog.color );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
 	document.body.appendChild(renderer.domElement);
@@ -48,6 +46,32 @@ function MyThree() {
 		wireframe: new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } ),
 	};
 
+	const objects = [];
+	const objectsInScene = {};
+	this.updateObjects = newObjects => {
+		objects.splice(0);
+		objects.push.apply(objects, newObjects);
+	};
+
+	function updatePositions() {
+
+		// iterate over the physics objects
+		for ( let i of objects ) {
+			if (i.meta.type !== 'genericObject') continue;
+
+			if (objectsInScene[i.id]) {
+				objectsInScene[i.id].position.set(i.position.x, i.position.y, i.position.z);
+				objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.z, i.quaternion.y, i.quaternion.w), 'XZY');
+			}
+		}
+	}
+	this.on('prerender', updatePositions);
+
+	this.connectPhysicsToThree = function(mesh, physicsMesh) {
+		objectsInScene[physicsMesh.id] = mesh;
+		scene.add(mesh);
+	};
+
 	function addSphere(radius = 1) {
 		const geometry = new THREE.SphereGeometry(radius, 8, 5);
 		const mesh = new THREE.Mesh(geometry, materials.wireframe);
@@ -73,14 +97,12 @@ function MyThree() {
 	}
 
 	function useMetaballs(effectSize = 100, debug = false) {
+
+		scene.fog = new THREE.Fog( 0xcce0ff, 10, effectSize*2 );
+		renderer.setClearColor( scene.fog.color );
+
 		/*jshint validthis: true */
 		require('./marching');
-
-		const points = [];
-		this.metaballs.updatePoints = newPoints => {
-			points.splice(0);
-			points.push.apply(points, newPoints);
-		};
 
 		const effect = new THREE.MarchingCubes({
 			resolution: 20,
@@ -98,7 +120,6 @@ function MyThree() {
 		effectsLayer.scale.set( effectSize, effectSize, effectSize );
 		effectsLayer.add(effect);
 
-		const balls = {};
 		const render = () => {
 
 			effect.reset();
@@ -108,25 +129,25 @@ function MyThree() {
 
 			// fill the field with some metaballs
 			var ballx, bally, ballz, subtract = 5;
-			for ( let i of points ) {
+			for ( let i of objects ) {
+
+				// Draw metaballs on the points
+				if (i.meta.type !== 'point') continue;
 				let tV = new THREE.Vector3(i.position.x, i.position.y, i.position.z);
 				let nTV = effect.worldToLocal(tV);
 				ballx = nTV.x/2 + 0.5;
 				bally = nTV.y/2 + 0.5;
 				ballz = nTV.z/2 + 0.5;
 
-				if (balls[i.id]) {
-					balls[i.id].position.x = nTV.x;
-					balls[i.id].position.y = nTV.y;
-					balls[i.id].position.z = nTV.z;
-					balls[i.id].quaternion.set(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w);
+				if (objectsInScene[i.id]) {
+					objectsInScene[i.id].position.set(nTV.x, nTV.y, nTV.z);
+					objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.z, i.quaternion.y, i.quaternion.w), 'XZY');
 				} else {
-					balls[i.id] = addSphere(i.radius/effectSize);
-					effectsLayer.add(balls[i.id]);
+					objectsInScene[i.id] = addSphere(i.meta.radius / effectSize);
+					effectsLayer.add(objectsInScene[i.id]);
 				}
 
-				// console.log(ballx, bally, ballz, nTV);
-				effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.radius/effectSize), subtract);
+				effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.meta.radius/effectSize), subtract);
 			}
 		};
 
@@ -152,7 +173,6 @@ function MyThree() {
 	this.scene = scene;
 	this.camera = camera;
 	this.materials = materials;
-	EventEmitter.call(this);
 }
 util.inherits(MyThree, EventEmitter);
 
