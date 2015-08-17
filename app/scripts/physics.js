@@ -26,29 +26,29 @@ function animate() {
 function swapYZ(v) {
 	return {
 		x: v.x,
-		z: v.y,
-		y: v.z
+		y: v.y,
+		z: v.z
 	};
 }
 
 function getObject({id, scale, mass}) {
 	if (!mass) mass = 0;
 	return fetchJSON('../models/' + id + '.json')
-	.then(models => {
+	.then(model => {
+
 		const modelBody = new Cannon.Body({ mass });
-		for(let i=0; i < models.length; i++){
 
-			const modelData = threeJSONLoader(models[i], scale);
+		const modelData = threeJSONLoader(model, scale);
 
-			// Construct polyhedron
-			const modelPart = new Cannon.ConvexPolyhedron(
-				modelData.vertices.map(v => new Cannon.Vec3(v[0], v[1], v[2])),
-				modelData.faces
-			);
+		// Construct polyhedron
+		const modelPart = new Cannon.ConvexPolyhedron(
+			modelData.vertices.map(v => new Cannon.Vec3(v[0], v[1], v[2])),
+			modelData.faces
+		);
 
-			// Add to compound
-			modelBody.addShape(modelPart);
-		}
+		// Add to compound
+		modelBody.addShape(modelPart);
+		console.log(modelPart.volume());
 
 		// Create body
 		modelBody.quaternion.setFromAxisAngle(new Cannon.Vec3(1,0,0), -Math.PI/2);
@@ -102,7 +102,7 @@ self.addEventListener('message', function(event) {
 						body.meta.type = 'genericObject';
 						world.addBody(body);
 						body.addEventListener("collide", function(e){
-						    console.log("Contact between bodies:",e.contact);
+						    // console.log("Contact between bodies:",e.contact);
 						});
 					});
 

@@ -3,12 +3,16 @@
 const EventEmitter = require('fast-event-emitter');
 const util = require('util');
 
-function MyThree() {
+function MyThree(debug = false) {
 
 	EventEmitter.call(this);
 	const OrbitControls = require('three-orbit-controls')(THREE);
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-	new OrbitControls(camera);
+	camera.position.y = 100;
+	camera.position.z = 30;
+	camera.up.set(0, 0, 1);
+	camera.lookAt(0, 0, 0);
+	window.orbit = new OrbitControls(camera);
 
 	const scene = new THREE.Scene();
 	scene.add(camera);
@@ -61,7 +65,7 @@ function MyThree() {
 
 			if (objectsInScene[i.id]) {
 				objectsInScene[i.id].position.set(i.position.x, i.position.y, i.position.z);
-				objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.z, i.quaternion.y, i.quaternion.w), 'XZY');
+				objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
 			}
 		}
 	}
@@ -79,7 +83,6 @@ function MyThree() {
 	}
 
 	function addRoom(...geom) {
-
 		const geometry = new THREE.BoxGeometry(...geom);
 		const mesh = new THREE.Mesh(geometry, materials.boring);
 		return mesh;
@@ -96,10 +99,12 @@ function MyThree() {
 		});
 	}
 
-	function useMetaballs(effectSize = 100, debug = false) {
+	function useMetaballs(effectSize = 100) {
 
-		scene.fog = new THREE.Fog( 0xcce0ff, 10, effectSize*2 );
-		renderer.setClearColor( scene.fog.color );
+		if (!debug) {
+			scene.fog = new THREE.Fog( 0xcce0ff, effectSize*1.2, effectSize*2.2 );
+			renderer.setClearColor( scene.fog.color );
+		}
 
 		/*jshint validthis: true */
 		require('./marching');
@@ -125,7 +130,7 @@ function MyThree() {
 			effect.reset();
 			let newP = effectsPosition.getWorldPosition();
 			effectsLayer.position.set(newP.x, newP.y, newP.z);
-			if (debug) effect.addPlaneY(10, 2);
+			// if (debug) effect.addPlaneY(10, 2);
 
 			// fill the field with some metaballs
 			var ballx, bally, ballz, subtract = 5;
@@ -139,15 +144,17 @@ function MyThree() {
 				bally = nTV.y/2 + 0.5;
 				ballz = nTV.z/2 + 0.5;
 
-				if (objectsInScene[i.id]) {
-					objectsInScene[i.id].position.set(nTV.x, nTV.y, nTV.z);
-					objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.z, i.quaternion.y, i.quaternion.w), 'XZY');
-				} else {
-					objectsInScene[i.id] = addSphere(i.meta.radius / effectSize);
-					effectsLayer.add(objectsInScene[i.id]);
+				if (debug) {
+					if (objectsInScene[i.id]) {
+						objectsInScene[i.id].position.set(nTV.x, nTV.y, nTV.z);
+						objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
+					} else {
+						objectsInScene[i.id] = addSphere(i.meta.radius / effectSize);
+						effectsLayer.add(objectsInScene[i.id]);
+					}
 				}
 
-				effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.meta.radius/effectSize), subtract);
+				if (!debug) effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.meta.radius/effectSize), subtract);
 			}
 		};
 

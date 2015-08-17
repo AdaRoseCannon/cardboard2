@@ -10,13 +10,14 @@ Promise.all([
 ]).then(function () {
 	console.log('Ready');
 	const three = new MyThree();
-	three.camera.position.z = 300;
 
 	const grid = new THREE.GridHelper( 100, 10 );
 	grid.setColors( 0xff0000, 0xffffff );
+
+	// Rotate it to the XY plane
+	grid.rotation.set(Math.PI/2, 0, 0);
 	three.scene.add( grid );
 	three.metaballs.init();
-
 
 	// Run the verlet physics
 	const physics = new PhysicsWrapper();
@@ -38,10 +39,14 @@ Promise.all([
 		setInterval(() => {
 
 			if (i++ < 32) physics.addPoint({
-				position: {x: 0, y: 10, z: 0},
-				velocity: {x: 4 * (Math.random() - 0.5), y: 4 * Math.random(), z: 4 * (Math.random() - 0.5)},
+				position: {x: 0, y: 0, z: 20},
+				velocity: {
+					x: 4 * (Math.random() - 0.5),
+					y: 4 * (Math.random() - 0.5),
+					z: 4 * (Math.random() - 0)
+				},
 				radius: 4,
-				mass: 10,
+				mass: 1,
 				charge: 0,
 				meta: {
 					metaball: true
@@ -52,7 +57,7 @@ Promise.all([
 		Promise.all([
 			three.addObject('box', 'boring').then(mesh => {
 				mesh.scale.set(10, 10, 10);
-				mesh.position.set(0, 50, 0);
+				mesh.position.set(0, 0, 50);
 				return mesh;
 			}),
 			physics.addObject({
@@ -63,7 +68,7 @@ Promise.all([
 					z: 0
 				},
 				scale: 10,
-				mass: 1
+				mass: 10
 			})
 		])
 		.then(([mesh, meshPhysics]) => {

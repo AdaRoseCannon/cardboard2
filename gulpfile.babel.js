@@ -226,8 +226,8 @@ gulp.task('serve:test', () => {
 gulp.task('ship', function () {
 	return gulp.src('./dist/**/*')
 		.pipe(require('gulp-gh-pages')({
-			origin: 'git@github.com:AdaRoseEdwards/verlet.git',
-			remoteUrl: 'git@github.com:AdaRoseEdwards/verlet.git',
+			origin: 'git@github.com:AdaRoseEdwards/cardboard2.git',
+			remoteUrl: 'git@github.com:AdaRoseEdwards/cardboard2.git',
 			branch: 'gh-pages'
 		}));
 });
