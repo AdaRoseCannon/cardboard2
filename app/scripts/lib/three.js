@@ -1,15 +1,16 @@
 /* global THREE */
 'use strict';
 const EventEmitter = require('fast-event-emitter');
+const fetchJSON = require('./fetchJSON.js');
 const util = require('util');
 
 function MyThree(debug = false) {
 
 	EventEmitter.call(this);
 	const OrbitControls = require('three-orbit-controls')(THREE);
-	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-	camera.position.y = 100;
-	camera.position.z = 30;
+	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.y = 10;
+	camera.position.z = 3;
 	camera.up.set(0, 0, 1);
 	camera.lookAt(0, 0, 0);
 	window.orbit = new OrbitControls(camera);
@@ -47,7 +48,7 @@ function MyThree(debug = false) {
 	const materials = {
 		slime: new THREE.MeshLambertMaterial( { color: 0x99ff99, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } ),
 		boring: new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000 } ),
-		wireframe: new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } ),
+		wireframe: new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } )
 	};
 
 	const objects = [];
@@ -88,33 +89,61 @@ function MyThree(debug = false) {
 		return mesh;
 	}
 
-	function addObject(id, material) {
+	function addObject(id) {
 
-		const loader = new THREE.JSONLoader();
-		return new Promise(resolve => {
-			loader.load( "./models/" + id + ".json", geometry => {
-				const mesh = new THREE.Mesh( geometry, material && materials[material] ? materials[material] : materials.wireframe );
-				resolve(mesh);
-			});
-		});
+		const xyFixM = new THREE.Matrix4();
+		xyFixM.makeRotationFromEuler(new THREE.Euler(Math.PI/2, 0, 0, 'XYZ'));
+		return fetchJSON('../models/' + id + '.json')
+			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
 	}
 
-	function useMetaballs(effectSize = 100) {
-
-		if (!debug) {
-			scene.fog = new THREE.Fog( 0xcce0ff, effectSize*1.2, effectSize*2.2 );
-			renderer.setClearColor( scene.fog.color );
-		}
+	function useDust(count = 10000) {
 
 		/*jshint validthis: true */
-		require('./marching');
 
-		const effect = new THREE.MarchingCubes({
-			resolution: 20,
-			material: materials.slime,
-			enableUvs: false,
-			enableColors: false
-		});
+		const height = 20;
+		const width = 100;
+
+		const map = THREE.ImageUtils.loadTexture( "images/dust.png" );
+
+		const geometry = new THREE.Geometry();
+
+		for ( let i = 0; i < count; i ++ ) {
+
+			var vertex = new THREE.Vector3();
+			vertex.x = Math.random() * width - width/2;
+			vertex.y = Math.random() * width - width/2;
+			vertex.z = Math.random() * height;
+
+			geometry.vertices.push( vertex );
+
+		}
+
+		const size  = 0.1;
+
+		const material = new THREE.PointCloudMaterial( { size, map } );
+		material.transparent = true;
+		material.opacity = 0.3;
+
+		const particles1 = new THREE.PointCloud( geometry, material );
+		const particles2 = new THREE.PointCloud( geometry, material );
+		scene.add( particles1 );
+		scene.add( particles2 );
+
+		const render = () => {
+			particles1.position.z = (-Date.now()/40000) % height * 2;
+			particles2.position.z = (-Date.now()/40000) % height * 2 + height;
+		};
+
+		// Render the metaballs before the scene gets rendered
+		this.on('prerender', render);
+	}
+
+	function useMetaballs(effectSize = 10) {
+
+		/*jshint validthis: true */
+
+		const effect = new THREE.MarchingCubes(20, materials.slime, false, false);
 
 		const effectsLayer = new THREE.Object3D();
 		const effectsPosition = new THREE.Object3D();
@@ -173,6 +202,16 @@ function MyThree(debug = false) {
 	this.metaballs = {
 		init: useMetaballs.bind(this)
 	};
+
+	this.deviceOrientation = () => {
+
+	};
+
+	this.useFog = (color, close, far) => {
+			scene.fog = new THREE.Fog(color || 0x7B6B03, close || 10, far || 100);
+			renderer.setClearColor( scene.fog.color );
+	};
+	this.useDust = useDust.bind(this);
 	this.animate = animate.bind(this);
 	this.addSphere = addSphere;
 	this.addRoom = addRoom;

@@ -4,20 +4,29 @@ const MyThree = require('./lib/three');
 const PhysicsWrapper = require('./lib/physicswrapper');
 const addScript = require('./lib/loadScript');
 
-Promise.all([
+Promise
+.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
-	addScript('http://threejs.org/build/three.min.js')
-]).then(function () {
+	addScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js')
+])
+.then(() => Promise.all([
+	addScript('https://cdn.rawgit.com/richtr/threeVR/master/js/DeviceOrientationController.js'),
+	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/MarchingCubes.js')
+]))
+.then(function () {
 	console.log('Ready');
 	const three = new MyThree();
 
-	const grid = new THREE.GridHelper( 100, 10 );
+	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
 
 	// Rotate it to the XY plane
 	grid.rotation.set(Math.PI/2, 0, 0);
 	three.scene.add( grid );
 	three.metaballs.init();
+	three.useDust();
+	three.useFog();
+	three.deviceOrientation();
 
 	// Run the verlet physics
 	const physics = new PhysicsWrapper();
@@ -39,13 +48,13 @@ Promise.all([
 		setInterval(() => {
 
 			if (i++ < 32) physics.addPoint({
-				position: {x: 0, y: 0, z: 20},
+				position: {x: 0, y: 0, z: 5},
 				velocity: {
-					x: 4 * (Math.random() - 0.5),
-					y: 4 * (Math.random() - 0.5),
-					z: 4 * (Math.random() - 0)
+					x: 0.4 * (Math.random() - 0.5),
+					y: 0.4 * (Math.random() - 0.5),
+					z: 0.4 * (Math.random() - 0)
 				},
-				radius: 4,
+				radius: 0.4,
 				mass: 1,
 				charge: 0,
 				meta: {
@@ -55,24 +64,19 @@ Promise.all([
 		}, 500);
 
 		Promise.all([
-			three.addObject('box', 'boring').then(mesh => {
-				mesh.scale.set(10, 10, 10);
-				mesh.position.set(0, 0, 50);
-				return mesh;
-			}),
+			three.addObject('myfirstscene'),
 			physics.addObject({
-				id: 'box',
+				id: 'myfirstscene',
 				position: {
 					x: 0,
-					y: 50,
+					y: 0,
 					z: 0
 				},
-				scale: 10,
-				mass: 10
+				mass: 0
 			})
 		])
 		.then(([mesh, meshPhysics]) => {
 			three.connectPhysicsToThree(mesh, meshPhysics);
-		})
+		});
 	});
 });
