@@ -10,9 +10,9 @@ const fixGeometry = require('./lib/fixGeometry');
 const world = new Cannon.World();
 const customObjects = [];
 
-world.gravity.set(0, 0, -10);
+world.gravity.set(0, -10, 0);
 world.broadphase = new Cannon.NaiveBroadphase();
-world.solver.iterations = 10;
+world.solver.iterations = 5;
 
 let oldT = 0;
 function animate() {
@@ -58,7 +58,7 @@ function getObject({id, mass}) {
 		});
 
 		// Create body
-		modelBody.quaternion.setFromAxisAngle(new Cannon.Vec3(1, 0, 0), Math.PI / 2);
+		// modelBody.quaternion.setFromAxisAngle(new Cannon.Vec3(1, 0, 0), Math.PI / 2);
 		return modelBody;
 	});
 }
@@ -73,9 +73,6 @@ self.addEventListener('message', function(event) {
 
 					world.defaultContactMaterial.contactEquationStiffness = 5e7;
 					world.defaultContactMaterial.contactEquationRelaxation = 4;
-					const body = new Cannon.Body({ mass: 0 });
-					body.addShape(new Cannon.Plane());
-					world.addBody(body);
 					return;
 
 				case 'getModelData':

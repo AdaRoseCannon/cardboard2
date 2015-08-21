@@ -19,10 +19,8 @@ Promise
 
 	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
-
-	// Rotate it to the XY plane
-	grid.rotation.set(Math.PI/2, 0, 0);
 	three.scene.add( grid );
+
 	three.metaballs.init();
 	three.useDust();
 	three.useFog();
@@ -48,11 +46,11 @@ Promise
 		setInterval(() => {
 
 			if (i++ < 32) physics.addPoint({
-				position: {x: 0, y: 0, z: 5},
+				position: {x: 0, y: 5, z: 0},
 				velocity: {
 					x: 0.4 * (Math.random() - 0.5),
-					y: 0.4 * (Math.random() - 0.5),
-					z: 0.4 * (Math.random() - 0)
+					y: 0.4 * (Math.random() - 0),
+					z: 0.4 * (Math.random() - 0.5)
 				},
 				radius: 0.4,
 				mass: 1,

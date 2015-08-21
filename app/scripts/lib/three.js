@@ -1,4 +1,4 @@
-/* global THREE */
+/* global THREE, DeviceOrientationController */
 'use strict';
 const EventEmitter = require('fast-event-emitter');
 const fetchJSON = require('./fetchJSON.js');
@@ -7,18 +7,16 @@ const util = require('util');
 function MyThree(debug = false) {
 
 	EventEmitter.call(this);
-	const OrbitControls = require('three-orbit-controls')(THREE);
-	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.position.y = 10;
-	camera.position.z = 3;
-	camera.up.set(0, 0, 1);
-	camera.lookAt(0, 0, 0);
-	window.orbit = new OrbitControls(camera);
 
 	const scene = new THREE.Scene();
-	scene.add(camera);
 
-	const renderer = new THREE.WebGLRenderer( { antialias: true } );
+	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.set(0, 3, 10);
+	camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+	scene.add(camera); // so that objects attatched to the camera get rendered
+
+	const renderer = new THREE.WebGLRenderer( { ntialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -91,8 +89,6 @@ function MyThree(debug = false) {
 
 	function addObject(id) {
 
-		const xyFixM = new THREE.Matrix4();
-		xyFixM.makeRotationFromEuler(new THREE.Euler(Math.PI/2, 0, 0, 'XYZ'));
 		return fetchJSON('../models/' + id + '.json')
 			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
 	}
@@ -205,11 +201,19 @@ function MyThree(debug = false) {
 
 	this.deviceOrientation = () => {
 
+		var controls = new DeviceOrientationController(camera, renderer.domElement);
+		controls.connect();
+		this.on('prerender', () => controls.update());
+	};
+
+	this.useOrbit = () => {
+		const OrbitControls = require('three-orbit-controls')(THREE);
+		new OrbitControls(camera);
 	};
 
 	this.useFog = (color, close, far) => {
-			scene.fog = new THREE.Fog(color || 0x7B6B03, close || 10, far || 100);
-			renderer.setClearColor( scene.fog.color );
+		scene.fog = new THREE.Fog(color || 0x7B6B03, close || 10, far || 100);
+		renderer.setClearColor( scene.fog.color );
 	};
 	this.useDust = useDust.bind(this);
 	this.animate = animate.bind(this);
