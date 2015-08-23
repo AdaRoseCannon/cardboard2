@@ -15,7 +15,7 @@ Promise
 ]))
 .then(function () {
 	console.log('Ready');
-	const three = new MyThree();
+	const three = new MyThree(0);
 
 	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
@@ -75,6 +75,36 @@ Promise
 		])
 		.then(([mesh, meshPhysics]) => {
 			three.connectPhysicsToThree(mesh, meshPhysics);
+		})
+		.then(() => {
+			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
+			const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
+			const sprite = new THREE.Sprite(material);
+			three.hud.add(sprite);
+
+			const targets = [];
+			(function collectGoTargets(root) {
+				if (root.children) {
+					root.children.forEach(child => {
+						if (child.name.match(/^gotarget\d+$/i)) {
+							const tSprite = new THREE.Sprite(material);
+							child.add(tSprite);
+							tSprite.scale.set(child.scale.x, child.scale.y, child.scale.z);
+							targets.push(tSprite);
+							tSprite.name = child.name + '_sprite';
+						}
+						collectGoTargets(child);
+					});
+				}
+			})(three.scene);
+
+			three.on('prerender', () => {
+				const raycaster = new THREE.Raycaster();
+				raycaster.setFromCamera(new THREE.Vector2(0,0), three.camera);
+				const hits = raycaster.intersectObjects(targets);
+				if (hits.length) console.log(hits[0].object.name);
+			});
+			window.three = three;
 		});
 	});
 });

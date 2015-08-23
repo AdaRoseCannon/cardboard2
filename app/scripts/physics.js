@@ -12,7 +12,7 @@ const customObjects = [];
 
 world.gravity.set(0, -10, 0);
 world.broadphase = new Cannon.NaiveBroadphase();
-world.solver.iterations = 5;
+world.solver.iterations = 8;
 
 let oldT = 0;
 function animate() {
@@ -20,7 +20,7 @@ function animate() {
 	const t = Date.now();
 	const dT = (t - oldT) / 1000;
 
-	world.step(0.016, dT, 0.016);
+	world.step(dT);
 	oldT = t;
 }
 
@@ -45,13 +45,19 @@ function getObject({id, mass}) {
 
 		fixGeometry
 		.getGeomFromScene(newScene)
-		.forEach(geometry => {
+		.forEach(({geometry, center}) => {
 
 			// Construct polyhedron
 			const modelPart = new Cannon.ConvexPolyhedron(
-				geometry.vertices.map(v => new Cannon.Vec3(v.x, v.y, v.z)),
+				geometry.vertices.map(v => new Cannon.Vec3(
+					v.x - center[0],
+					v.y - center[1],
+					v.z - center[2]
+				)),
 				geometry.faces.map(f => [f.a, f.b, f.c])
 			);
+
+			modelPart.transformAllPoints(new Cannon.Vec3(center[0], center[1], center[2]));
 
 			// Add to compound
 			modelBody.addShape(modelPart);

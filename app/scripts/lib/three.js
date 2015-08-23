@@ -10,13 +10,17 @@ function MyThree(debug = false) {
 
 	const scene = new THREE.Scene();
 
-	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.position.set(0, 3, 10);
+	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
+	camera.position.set(0, 3, 9);
 	camera.lookAt(new THREE.Vector3(0, 0, 0));
-
 	scene.add(camera); // so that objects attatched to the camera get rendered
 
-	const renderer = new THREE.WebGLRenderer( { ntialias: true } );
+	const hud = new THREE.Object3D();
+	hud.position.set(0, 0, -0.2);
+	hud.scale.set(0.02, 0.02, 0.02);
+	camera.add(hud);
+
+	const renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -143,7 +147,7 @@ function MyThree(debug = false) {
 
 		const effectsLayer = new THREE.Object3D();
 		const effectsPosition = new THREE.Object3D();
-		effectsPosition.position.z = -1.2 * effectSize;
+		effectsPosition.position.z = -effectSize;
 
 		scene.add(effectsLayer);
 		camera.add(effectsPosition);
@@ -223,6 +227,7 @@ function MyThree(debug = false) {
 	this.scene = scene;
 	this.camera = camera;
 	this.materials = materials;
+	this.hud = hud;
 }
 util.inherits(MyThree, EventEmitter);
 
