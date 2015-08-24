@@ -83,11 +83,7 @@ Promise
 			three.addObject('myfirstscene'),
 			physics.addObject({
 				id: 'myfirstscene',
-				position: {
-					x: 0,
-					y: 0,
-					z: 0
-				},
+				position: { x: 0, y: 0, z: 0 },
 				mass: 0
 			})
 		])
@@ -112,12 +108,6 @@ Promise
 				}
 			})(three.scene);
 
-			three.on('prerender', () => {
-				const raycaster = new THREE.Raycaster();
-				raycaster.setFromCamera(new THREE.Vector2(0,0), three.camera);
-				const hits = raycaster.intersectObjects(goTargets.getTargets());
-				if (hits.length) console.log(hits[0].object.name);
-			});
 			window.three = three;
 		});
 	});
