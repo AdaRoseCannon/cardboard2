@@ -3,6 +3,24 @@
 const MyThree = require('./lib/three');
 const PhysicsWrapper = require('./lib/physicswrapper');
 const addScript = require('./lib/loadScript');
+const GoTargets = require('./lib/gotargets');
+
+// Start service worker
+if ('serviceWorker' in navigator) {
+	navigator.serviceWorker.register('/sw.js', { scope: '/' })
+	.then(function(reg) {
+		console.log('sw registered', reg);
+	}).catch(function(error) {
+		console.log('sw registration failed with ' + error);
+	});
+
+	// if the service worker is running...
+	// We don't want to make 1000s of api requests without
+	// some caching for next time.
+	if (navigator.serviceWorker.controller) {
+		console.log('Offlining Availble');
+	}
+}
 
 Promise
 .all([
@@ -80,18 +98,14 @@ Promise
 			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
 			const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
 			const sprite = new THREE.Sprite(material);
+			const goTargets = new GoTargets(three, physics);
 			three.hud.add(sprite);
 
-			const targets = [];
 			(function collectGoTargets(root) {
 				if (root.children) {
 					root.children.forEach(child => {
 						if (child.name.match(/^gotarget\d+$/i)) {
-							const tSprite = new THREE.Sprite(material);
-							child.add(tSprite);
-							tSprite.scale.set(child.scale.x, child.scale.y, child.scale.z);
-							targets.push(tSprite);
-							tSprite.name = child.name + '_sprite';
+							goTargets.addTarget(child);
 						}
 						collectGoTargets(child);
 					});
@@ -101,7 +115,7 @@ Promise
 			three.on('prerender', () => {
 				const raycaster = new THREE.Raycaster();
 				raycaster.setFromCamera(new THREE.Vector2(0,0), three.camera);
-				const hits = raycaster.intersectObjects(targets);
+				const hits = raycaster.intersectObjects(goTargets.getTargets());
 				if (hits.length) console.log(hits[0].object.name);
 			});
 			window.three = three;
