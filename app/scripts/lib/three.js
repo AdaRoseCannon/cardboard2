@@ -97,7 +97,47 @@ function MyThree(debug = false) {
 			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
 	}
 
-	function useDust(count = 10000) {
+
+	function useStars(count = 100) {
+
+		/*jshint validthis: true */
+
+		const map = THREE.ImageUtils.loadTexture( "images/star.png" );
+
+		const geometry = new THREE.Geometry();
+
+		for ( let i = 0; i < count; i ++ ) {
+
+			const theta = Math.random() * Math.PI * 2;
+			const thi = Math.random() * Math.PI;
+			const r = 50 + Math.random() * 50;
+
+			var vertex = new THREE.Vector3();
+			vertex.x = r * Math.sin(theta) * Math.cos(thi);
+			vertex.y = r * Math.sin(theta) * Math.sin(thi);
+			vertex.z = r * Math.cos(theta);
+			geometry.vertices.push( vertex );
+
+		}
+
+		const size  = 3;
+
+		const material = new THREE.PointCloudMaterial( { size, map, fog: false } );
+		material.transparent = true;
+
+		const particles1 = new THREE.PointCloud( geometry, material );
+		scene.add( particles1 );
+
+		const render = () => {
+			particles1.rotation.y = (-Date.now()/100000);
+			particles1.rotation.z = (-Date.now()/400000);
+		};
+
+		// Render the metaballs before the scene gets rendered
+		this.on('prerender', render);
+	}
+
+	function useDust(count = 1000) {
 
 		/*jshint validthis: true */
 
@@ -131,8 +171,8 @@ function MyThree(debug = false) {
 		scene.add( particles2 );
 
 		const render = () => {
-			particles1.position.z = (-Date.now()/40000) % height * 2;
-			particles2.position.z = (-Date.now()/40000) % height * 2 + height;
+			particles1.position.y = (-Date.now()/40000) % height * 2;
+			particles2.position.y = (-Date.now()/40000) % height * 2 + height;
 		};
 
 		// Render the metaballs before the scene gets rendered
@@ -228,6 +268,7 @@ function MyThree(debug = false) {
 	this.camera = camera;
 	this.materials = materials;
 	this.hud = hud;
+	this.useStars = useStars;
 }
 util.inherits(MyThree, EventEmitter);
 

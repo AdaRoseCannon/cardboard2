@@ -5,35 +5,41 @@ const PhysicsWrapper = require('./lib/physicswrapper');
 const addScript = require('./lib/loadScript');
 const GoTargets = require('./lib/gotargets');
 
-// Start service worker
-if ('serviceWorker' in navigator) {
-	navigator.serviceWorker.register('/sw.js', { scope: '/' })
-	.then(function(reg) {
-		console.log('sw registered', reg);
-	}).catch(function(error) {
-		console.log('sw registration failed with ' + error);
-	});
+function serviceWorker() {
 
-	// if the service worker is running...
-	// We don't want to make 1000s of api requests without
-	// some caching for next time.
-	if (navigator.serviceWorker.controller) {
-		console.log('Offlining Availble');
-	}
+	return new Promise(function (resolve) {
+
+		// Start service worker
+		if ('serviceWorker' in navigator) {
+
+			if (navigator.serviceWorker.controller) {
+				console.log('Offlining Availble');
+				resolve();
+			} else {
+				return navigator.serviceWorker.register('/sw.js', { scope: '/' })
+				.then(function(reg) {
+					console.log('sw registered', reg);
+					location.reload();
+				});
+			}
+		} else {
+			console.error('No Service Worker');
+		}
+	});
 }
 
-Promise
-.all([
+serviceWorker()
+.then(() => Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
 	addScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js')
-])
+]))
 .then(() => Promise.all([
 	addScript('https://cdn.rawgit.com/richtr/threeVR/master/js/DeviceOrientationController.js'),
 	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/MarchingCubes.js')
 ]))
 .then(function () {
 	console.log('Ready');
-	const three = new MyThree(0);
+	const three = new MyThree();
 
 	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
@@ -41,8 +47,9 @@ Promise
 
 	three.metaballs.init();
 	three.useDust();
-	three.useFog();
+	three.useFog(0x2B0680);
 	three.deviceOrientation();
+	three.useStars();
 
 	// Run the verlet physics
 	const physics = new PhysicsWrapper();
@@ -72,7 +79,6 @@ Promise
 				},
 				radius: 0.4,
 				mass: 1,
-				charge: 0,
 				meta: {
 					metaball: true
 				}
@@ -102,8 +108,9 @@ Promise
 					root.children.forEach(child => {
 						if (child.name.match(/^gotarget\d+$/i)) {
 							goTargets.addTarget(child);
+						} else {
+							collectGoTargets(child);
 						}
-						collectGoTargets(child);
 					});
 				}
 			})(three.scene);
