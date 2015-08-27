@@ -95,14 +95,14 @@ function MyThree(debug = false) {
 
 	function addObject(id) {
 
-		return fetchJSON('../models/' + id + '.json')
+		return fetchJSON('models/' + id + '.json')
 			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
 	}
 
 	function addSingle(id) {
 
 		const loader = new THREE.JSONLoader();
-		return fetchJSON('../models/' + id + '.json')
+		return fetchJSON('models/' + id + '.json')
 			.then(sceneIn => loader.parse(sceneIn));
 	}
 
