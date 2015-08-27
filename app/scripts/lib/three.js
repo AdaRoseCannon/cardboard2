@@ -25,11 +25,13 @@ function MyThree(debug = false) {
 	const renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.shadowMapEnabled = true;
 
 	document.body.appendChild(renderer.domElement);
 
 	const light = new THREE.DirectionalLight( 0xffffff );
-	light.position.set( 0.5, 0.5, 1 );
+	light.position.set( 0.5, 1, 0.5 );
+	light.castShadow = true;
 	scene.add( light );
 
 	const pointLight = new THREE.PointLight( 0xff3300 );
@@ -264,7 +266,7 @@ function MyThree(debug = false) {
 	};
 
 	this.useFog = (color, close, far) => {
-		scene.fog = new THREE.Fog(color || 0x7B6B03, close || 10, far || 100);
+		scene.fog = new THREE.Fog(color || 0x7B6B03, close || 1, far || 20);
 		renderer.setClearColor( scene.fog.color );
 	};
 	this.useDust = useDust.bind(this);
