@@ -2,7 +2,7 @@
 
 'use strict';
 
-importScripts('http://threejs.org/build/three.min.js');
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js');
 const Cannon = require('cannon');
 const fetchJSON = require('./lib/fetchJSON.js');
 const fixGeometry = require('./lib/fixGeometry');

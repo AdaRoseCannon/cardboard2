@@ -16,7 +16,7 @@ function serviceWorker() {
 				console.log('Offlining Availble');
 				resolve();
 			} else {
-				return navigator.serviceWorker.register('/sw.js', { scope: '/' })
+				return navigator.serviceWorker.register('./sw.js')
 				.then(function(reg) {
 					console.log('sw registered', reg);
 					location.reload();
@@ -45,7 +45,7 @@ serviceWorker()
 	grid.setColors( 0xff0000, 0xffffff );
 	three.scene.add( grid );
 
-	// three.metaballs.init();
+	three.metaballs.init();
 	three.useDust();
 	three.useFog(0x2B0680);
 	three.deviceOrientation();
@@ -67,23 +67,23 @@ serviceWorker()
 		});
 
 		// Add a new point every half second
-		// let i = 0;
-		// setInterval(() => {
+		let i = 0;
+		setInterval(() => {
 
-		// 	if (i++ < 32) physics.addPoint({
-		// 		position: {x: 0, y: 5, z: 0},
-		// 		velocity: {
-		// 			x: 0.4 * (Math.random() - 0.5),
-		// 			y: 0.4 * (Math.random() - 0),
-		// 			z: 0.4 * (Math.random() - 0.5)
-		// 		},
-		// 		radius: 0.4,
-		// 		mass: 1,
-		// 		meta: {
-		// 			metaball: true
-		// 		}
-		// 	});
-		// }, 500);
+			if (i++ < 32) physics.addPoint({
+				position: {x: 0, y: 5, z: 0},
+				velocity: {
+					x: 0.4 * (Math.random() - 0.5),
+					y: 0.4 * (Math.random() - 0),
+					z: 0.4 * (Math.random() - 0.5)
+				},
+				radius: 0.4,
+				mass: 1,
+				meta: {
+					metaball: true
+				}
+			});
+		}, 500);
 
 		Promise.all([
 			three.addObject('myfirstscene'),
