@@ -31,7 +31,7 @@ function serviceWorker() {
 serviceWorker()
 .then(() => Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
-	addScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.js')
+	addScript('./scripts/three.min.js')
 ]))
 .then(() => Promise.all([
 	addScript('https://cdn.rawgit.com/richtr/threeVR/master/js/DeviceOrientationController.js'),
