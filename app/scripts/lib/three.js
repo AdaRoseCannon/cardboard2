@@ -11,8 +11,10 @@ function MyThree(debug = false) {
 	const scene = new THREE.Scene();
 
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
-	camera.position.set(0, 3, 9);
-	camera.lookAt(new THREE.Vector3(0, 0, 0));
+	camera.height = 2;
+	camera.position.set(0, camera.height, 9);
+	camera.lookAt(new THREE.Vector3(0, camera.height, 0));
+	camera.rotation.y += Math.PI;
 	scene.add(camera); // so that objects attatched to the camera get rendered
 
 	const hud = new THREE.Object3D();
@@ -97,6 +99,12 @@ function MyThree(debug = false) {
 			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
 	}
 
+	function addSingle(id) {
+
+		const loader = new THREE.JSONLoader();
+		return fetchJSON('../models/' + id + '.json')
+			.then(sceneIn => loader.parse(sceneIn));
+	}
 
 	function useStars(count = 100) {
 
@@ -264,6 +272,7 @@ function MyThree(debug = false) {
 	this.addSphere = addSphere;
 	this.addRoom = addRoom;
 	this.addObject = addObject;
+	this.addSingle = addSingle;
 	this.scene = scene;
 	this.camera = camera;
 	this.materials = materials;
