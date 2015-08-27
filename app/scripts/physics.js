@@ -2,7 +2,7 @@
 
 'use strict';
 
-importScripts('./scripts/three.min.js');
+importScripts('./three.min.js'); // loaded from vendor dir
 const Cannon = require('cannon');
 const fetchJSON = require('./lib/fetchJSON.js');
 const fixGeometry = require('./lib/fixGeometry');
