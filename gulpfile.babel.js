@@ -26,22 +26,15 @@ gulp.task('styles', () => {
 		.pipe(reload({stream: true}));
 });
 
-gulp.task('browserify', function () {
-	try {
-		mkdirSync('.tmp');
-	} catch (e) {
-		if (e.code !== 'EEXIST') {
-			throw e;
-		}
-	}
+gulp.task('vendorScripts', () => {
+	return gulp.src([
+		'app/scripts/vendor/*.*',
+	], {
+		dot: true
+	}).pipe(gulp.dest('.tmp/scripts'));
+});
 
-	try {
-		mkdirSync('.tmp/scripts');
-	} catch (e) {
-		if (e.code !== 'EEXIST') {
-			throw e;
-		}
-	}
+gulp.task('browserify', ['vendorScripts'], function () {
 
 	return Promise.all(readdirSync('./app/scripts/').map(function (a) {
 		var path = './app/scripts/' + a;
