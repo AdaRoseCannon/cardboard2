@@ -12,8 +12,8 @@ function MyThree(debug = false) {
 
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
 	camera.height = 2;
-	camera.position.set(0, camera.height, 9);
-	camera.lookAt(new THREE.Vector3(0, camera.height, 0));
+	camera.position.set(0, camera.height, 0);
+	camera.lookAt(new THREE.Vector3(0, camera.height, -9));
 	camera.rotation.y += Math.PI;
 	scene.add(camera); // so that objects attatched to the camera get rendered
 
@@ -29,16 +29,16 @@ function MyThree(debug = false) {
 
 	document.body.appendChild(renderer.domElement);
 
-	const light = new THREE.DirectionalLight( 0xffffff );
-	light.position.set( 0.5, 1, 0.5 );
-	light.castShadow = true;
-	scene.add( light );
+	// const light = new THREE.DirectionalLight( 0xffffff );
+	// light.position.set( 0.5, 1, 0.5 );
+	// light.castShadow = true;
+	// scene.add( light );
 
-	const pointLight = new THREE.PointLight( 0xff3300 );
-	pointLight.position.set( 0, 0, 0 );
-	scene.add( pointLight );
+	// const pointLight = new THREE.PointLight( 0xff3300 );
+	// pointLight.position.set( 0, 0, 0 );
+	// scene.add( pointLight );
 
-	const ambientLight = new THREE.AmbientLight( 0x080808 );
+	const ambientLight = new THREE.AmbientLight( 0x2B0680 );
 	scene.add( ambientLight );
 
 	const path = "images/";

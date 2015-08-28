@@ -8,20 +8,21 @@ function makeTextSprite( message, parameters ) {
 	var fontface = parameters.hasOwnProperty("fontface") ? 
 		parameters["fontface"] : "Arial";
 	
-	var fontsize = parameters.hasOwnProperty("fontsize") ? 
-		parameters["fontsize"] : 18;
-	
 	var borderThickness = parameters.hasOwnProperty("borderThickness") ? 
 		parameters["borderThickness"] : 2;
 
 	var size = parameters.hasOwnProperty("size") ? 
-		parameters["size"] : 10;
+		parameters["size"] : 1;
 		
 	var canvas = document.createElement('canvas');
 	canvas.width = 1024;
 	canvas.height = 256;
 	var context = canvas.getContext('2d');
-	context.font = "Bold " + fontsize + "px " + fontface;
+
+	// context.fillStyle = "rgba(255, 0, 255, 0.4)";
+	// context.fillRect(0,0,canvas.width,canvas.height);
+
+	context.font = "Bold " + (canvas.height - borderThickness) + "px " + fontface;
 	context.textAlign = 'center';
 	context.textBaseline = 'middle';
 	

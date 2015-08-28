@@ -42,16 +42,17 @@ module.exports = function GoTargetConfig(three, physics) {
 		if (!config[id]) throw('No Config For ' + id);
 		const tSprite = new THREE.Sprite(material);
 		node.add(tSprite);
-		tSprite.scale.set(node.scale.x * 2, node.scale.y * 2, node.scale.z * 2);
+		tSprite.scale.set(node.scale.x, node.scale.y, node.scale.z);
 		tSprite.name = id;
 		node.name = id + '_anchor';
 		this.targets[id] = tSprite;
 		if (config[id].text) {
 			config[id].textSprite = textSprite(config[id].text, {
-				fontsize: 42,
+				fontsize: 18,
 				fontface: 'Iceland',
-				size: 5
+				borderThickness: 20
 			});
+			config[id].textSprite.position.z = 0.2;
 			tSprite.add(config[id].textSprite);
 			hidden.push(config[id].textSprite);
 		}
