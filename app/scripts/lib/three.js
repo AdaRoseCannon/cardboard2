@@ -266,7 +266,7 @@ function MyThree(debug = false) {
 	};
 
 	this.useFog = (color, close, far) => {
-		scene.fog = new THREE.Fog(color || 0x7B6B03, close || 1, far || 20);
+		scene.fog = new THREE.Fog(color || 0x7B6B03, close || 1, far || 40);
 		renderer.setClearColor( scene.fog.color );
 	};
 	this.useDust = useDust.bind(this);
