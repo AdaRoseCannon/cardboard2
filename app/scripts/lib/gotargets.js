@@ -10,6 +10,14 @@ module.exports = function GoTargetConfig(three, physics) {
 		"GoTarget0": {
 			id: "GoTarget0",
 			text: "Click Me"
+		},
+		"GoTarget1": {
+			id: "GoTarget1",
+			text: "Then Me"
+		},
+		"GoTarget2": {
+			id: "GoTarget2",
+			text: "And Me"
 		}
 	};
 	const hidden = [];
