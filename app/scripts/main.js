@@ -104,7 +104,20 @@ serviceWorker()
 			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
 			const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
 			const sprite = new THREE.Sprite(material);
-			const goTargets = new GoTargets(three, physics);
+			const goTargets = new GoTargets(three, physics, {
+				"GoTarget0": {
+					id: "GoTarget0",
+					text: "Tap to Walk"
+				},
+				"GoTarget1": {
+					id: "GoTarget1",
+					text: "Walk"
+				},
+				"GoTarget2": {
+					id: "GoTarget2",
+					text: "Walk"
+				}
+			});
 			three.hud.add(sprite);
 
 			(function collectGoTargets(root) {
