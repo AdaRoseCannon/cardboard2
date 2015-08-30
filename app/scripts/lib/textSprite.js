@@ -14,37 +14,50 @@ function makeTextSprite( message, parameters ) {
 	var size = parameters.hasOwnProperty("size") ? 
 		parameters["size"] : 1;
 		
-	var canvas = document.createElement('canvas');
-	canvas.width = 1024;
-	canvas.height = 256;
-	var context = canvas.getContext('2d');
+	var canvas1 = document.createElement('canvas');
+	var context1 = canvas1.getContext('2d');
+	var height = 256;
 
-	// context.fillStyle = "rgba(255, 0, 255, 0.4)";
-	// context.fillRect(0,0,canvas.width,canvas.height);
+	function setStyle(context) {
 
-	context.font = "Bold " + (canvas.height - borderThickness) + "px " + fontface;
-	context.textAlign = 'center';
-	context.textBaseline = 'middle';
-	
-	context.lineWidth = borderThickness;
+		context.font = "Bold " + (height - borderThickness) + "px " + fontface;
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+		
+		context.lineWidth = borderThickness;
 
-	// text color
-	context.strokeStyle = "rgba(255, 255, 255, 1.0)";
-	context.fillStyle = "rgba(0, 0, 0, 1.0)";
+		// text color
+		context.strokeStyle = "rgba(255, 255, 255, 1.0)";
+		context.fillStyle = "rgba(0, 0, 0, 1.0)";
+	}
 
-	context.strokeText( message, canvas.width/2, canvas.height/2);
-	context.fillText( message, canvas.width/2, canvas.height/2);
+	setStyle(context1);
+
+	var canvas2 = document.createElement('canvas');
+
+	// Make the canvas width a power of 2 larger than the text width
+	canvas2.width = Math.pow(2, Math.ceil(Math.log2( context1.measureText( message ).width )));
+	canvas2.height = height;
+	var context2 = canvas2.getContext('2d');
+	setStyle(context2);
+
+	context2.strokeText( message, canvas2.width/2, canvas2.height/2);
+	context2.fillText( message, canvas2.width/2, canvas2.height/2);
 	
 	// canvas contents will be used for a texture
-	var texture = new THREE.Texture(canvas) ;
+	var texture = new THREE.Texture(canvas2) ;
 	texture.needsUpdate = true;
 
 	var spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
 	var sprite = new THREE.Sprite(spriteMaterial);
+
+	var maxWidth = height * 4;
+
+	if (canvas2.width > maxWidth) size *= maxWidth/canvas2.width;
     
 	// get size data (height depends only on font size)
-	sprite.scale.set(size * canvas.width/canvas.height, size, 1);
-	return sprite;	
+	sprite.scale.set(size * canvas2.width/canvas2.height, size, 1);
+	return sprite;
 }
 
 module.exports = makeTextSprite;

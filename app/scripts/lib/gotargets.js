@@ -5,15 +5,15 @@ const util = require('util');
 
 /*global THREE*/
 
-module.exports = function GoTargetConfig(three, physics, config) {
+module.exports = function GoTargetConfig(three, goTargetsConfig) {
 	const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
 	const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
 
-	function GoTarget(config, node) {
+	function GoTarget(id, config, node) {
 
 		EventEmitter.call(this);
 		const tSprite = new THREE.Sprite(material);
-		const id = config.id;
+		this.id = id;
 
 		node.add(tSprite);
 		tSprite.scale.set(node.scale.x, node.scale.y, node.scale.z);
@@ -25,7 +25,6 @@ module.exports = function GoTargetConfig(three, physics, config) {
 				fontface: 'Iceland',
 				borderThickness: 20
 			});
-			this.textSprite.position.z = 0.2;
 			this.textSprite.visible = false;
 			tSprite.add(this.textSprite);
 		}
@@ -77,28 +76,37 @@ module.exports = function GoTargetConfig(three, physics, config) {
 	});
 
 	const interact = (event) => {
-		Object.keys(this.targets)
+		this.getTargets()
 		.forEach(target => {
-			if (target.hasHover) target.emit(event.type);
+			if (target.hasHover) {
+				target.emit(event.type);
+			}
 		});
 	};
 
-	window.addEventListener('click', interact);
-	window.addEventListener('mousedown', interact);
-	window.addEventListener('mouseup', interact);
-	window.addEventListener('touchdown', interact);
-	window.addEventListener('touchup', interact);
+	three.domElement.addEventListener('click', interact);
+	three.domElement.addEventListener('mousedown', interact);
+	three.domElement.addEventListener('mouseup', interact);
+	three.domElement.addEventListener('touchup', interact);
+	three.domElement.addEventListener('touchdown', interact);
 
 	this.getTarget = (id) => {
 		return this.targets[id];
 	};
 
-	this.addTarget = (node) => {
-
-		const id = node.name;
-		if (!config[id]) throw('No Config For ' + id);
-		this.targets[id] = new GoTarget(config[id], node);
-		window.targets = this.targets;
+	this.collectGoTargets = (root) => {
+		if (root.children) {
+			root.children.forEach(node => {
+				if (node.name.match(/^gotarget\d+$/i)) {
+					const id = node.name;
+					if (!goTargetsConfig[id]) throw('No Config For ' + id);
+					this.targets[id] = new GoTarget(id, goTargetsConfig[id], node);
+				} else {
+					this.collectGoTargets(node);
+				}
+			});
+		}
+		return this;
 	};
 
 	this.getTargets = () => Object.keys(this.targets).map(k => this.targets[k]);

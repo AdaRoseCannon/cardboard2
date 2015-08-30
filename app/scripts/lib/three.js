@@ -28,6 +28,7 @@ function MyThree(debug = false) {
 	renderer.shadowMapEnabled = true;
 
 	document.body.appendChild(renderer.domElement);
+	this.domElement = renderer.domElement;
 
 	// const light = new THREE.DirectionalLight( 0xffffff );
 	// light.position.set( 0.5, 1, 0.5 );

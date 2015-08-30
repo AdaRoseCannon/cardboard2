@@ -101,13 +101,17 @@ serviceWorker()
 			three.scene.add(turnAround);
 		})
 		.then(() => {
+
 			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
 			const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
 			const sprite = new THREE.Sprite(material);
-			const goTargets = new GoTargets(three, physics, {
+			three.hud.add(sprite);
+
+			// Set up the GoTargets
+			const goTargets = new GoTargets(three, {
 				"GoTarget0": {
 					id: "GoTarget0",
-					text: "Tap to Walk"
+					text: "Tap to\nWalk"
 				},
 				"GoTarget1": {
 					id: "GoTarget1",
@@ -117,20 +121,11 @@ serviceWorker()
 					id: "GoTarget2",
 					text: "Walk"
 				}
-			});
-			three.hud.add(sprite);
+			}).collectGoTargets(three.scene);
 
-			(function collectGoTargets(root) {
-				if (root.children) {
-					root.children.forEach(child => {
-						if (child.name.match(/^gotarget\d+$/i)) {
-							goTargets.addTarget(child);
-						} else {
-							collectGoTargets(child);
-						}
-					});
-				}
-			})(three.scene);
+			goTargets.targets.GoTarget0.on('click', function () {
+				console.log(this);
+			}.bind(goTargets.targets.GoTarget0));
 
 			window.three = three;
 		});
