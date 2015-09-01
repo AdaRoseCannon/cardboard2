@@ -4,11 +4,12 @@ const EventEmitter = require('fast-event-emitter');
 const fetchJSON = require('./fetchJSON.js');
 const util = require('util');
 
-function MyThree(debug = false) {
+function MyThree(debug = false){
 
 	EventEmitter.call(this);
 
 	const scene = new THREE.Scene();
+	this.scene = scene;
 
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
 	camera.height = 2;
@@ -16,16 +17,20 @@ function MyThree(debug = false) {
 	camera.lookAt(new THREE.Vector3(0, camera.height, -9));
 	camera.rotation.y += Math.PI;
 	scene.add(camera); // so that objects attatched to the camera get rendered
+	this.camera = camera;
 
 	const hud = new THREE.Object3D();
 	hud.position.set(0, 0, -0.2);
 	hud.scale.set(0.02, 0.02, 0.02);
 	camera.add(hud);
+	this.hud = hud;
 
 	const renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	renderer.shadowMapEnabled = true;
+	
+	this.renderMethod = renderer;
 
 	document.body.appendChild(renderer.domElement);
 	this.domElement = renderer.domElement;
@@ -79,39 +84,49 @@ function MyThree(debug = false) {
 	}
 	this.on('prerender', updatePositions);
 
-	this.connectPhysicsToThree = function(mesh, physicsMesh) {
+	this.connectPhysicsToThree = (mesh, physicsMesh) => {
 		objectsInScene[physicsMesh.id] = mesh;
 		scene.add(mesh);
 	};
 
-	function addSphere(radius = 1) {
-		const geometry = new THREE.SphereGeometry(radius, 8, 5);
+	this.addSphere = (radius) => {
+		const geometry = new THREE.SphereGeometry(radius || 1, 8, 5);
 		const mesh = new THREE.Mesh(geometry, materials.wireframe);
 		return mesh;
-	}
+	};
 
-	function addRoom(...geom) {
-		const geometry = new THREE.BoxGeometry(...geom);
-		const mesh = new THREE.Mesh(geometry, materials.boring);
-		return mesh;
-	}
 
-	function addObject(id) {
+	this.useCardboard = () => {
 
-		return fetchJSON('models/' + id + '.json')
+		const effect = new THREE.StereoEffect(renderer);
+		effect.eyeSeparation = 0.1;
+		effect.targetDistance = 0.25;
+		effect.setSize( window.innerWidth, window.innerHeight );
+		this.renderMethod = effect;
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+
+	};
+
+	this.addObject = (id) => fetchJSON('models/' + id + '.json')
 			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
-	}
 
-	function addSingle(id) {
+	this.walkTo = (destination) => {
+		camera.position.set(destination.x, destination.y, destination.z);
+	};
+
+	this.addSingle = (id) => {
 
 		const loader = new THREE.JSONLoader();
 		return fetchJSON('models/' + id + '.json')
 			.then(sceneIn => loader.parse(sceneIn));
-	}
+	};
 
-	function useStars(count = 100) {
+	this.useStars = (count) => {
 
 		/*jshint validthis: true */
+
+		count = count || 100;
 
 		const map = THREE.ImageUtils.loadTexture( "images/star.png" );
 
@@ -146,12 +161,13 @@ function MyThree(debug = false) {
 
 		// Render the metaballs before the scene gets rendered
 		this.on('prerender', render);
-	}
+	};
 
-	function useDust(count = 1000) {
+	this.useDust = (count) => {
 
 		/*jshint validthis: true */
 
+		count = count || 1000;
 		const height = 20;
 		const width = 100;
 
@@ -188,12 +204,11 @@ function MyThree(debug = false) {
 
 		// Render the metaballs before the scene gets rendered
 		this.on('prerender', render);
-	}
+	};
 
-	function useMetaballs(effectSize = 10) {
+	this.useMetaballs = (effectSize) => {
 
-		/*jshint validthis: true */
-
+		effectSize = effectSize || 10;
 		const effect = new THREE.MarchingCubes(20, materials.slime, false, false);
 
 		const effectsLayer = new THREE.Object3D();
@@ -229,7 +244,7 @@ function MyThree(debug = false) {
 						objectsInScene[i.id].position.set(nTV.x, nTV.y, nTV.z);
 						objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
 					} else {
-						objectsInScene[i.id] = addSphere(i.meta.radius / effectSize);
+						objectsInScene[i.id] = this.addSphere(i.meta.radius / effectSize);
 						effectsLayer.add(objectsInScene[i.id]);
 					}
 				}
@@ -240,18 +255,14 @@ function MyThree(debug = false) {
 
 		// Render the metaballs before the scene gets rendered
 		this.on('prerender', render);
-	}
+	};
 
-	function animate() {
+	this.animate = () => {
 		/*jshint validthis: true */
 
 		// note: three.js includes requestAnimationFrame shim
 		this.emit('prerender');
-		renderer.render(scene, camera);
-	}
-
-	this.metaballs = {
-		init: useMetaballs.bind(this)
+		this.renderMethod.render(scene, camera);
 	};
 
 	this.deviceOrientation = () => {
@@ -270,17 +281,6 @@ function MyThree(debug = false) {
 		scene.fog = new THREE.Fog(color || 0x7B6B03, close || 1, far || 40);
 		renderer.setClearColor( scene.fog.color );
 	};
-	this.useDust = useDust.bind(this);
-	this.animate = animate.bind(this);
-	this.addSphere = addSphere;
-	this.addRoom = addRoom;
-	this.addObject = addObject;
-	this.addSingle = addSingle;
-	this.scene = scene;
-	this.camera = camera;
-	this.materials = materials;
-	this.hud = hud;
-	this.useStars = useStars;
 }
 util.inherits(MyThree, EventEmitter);
 

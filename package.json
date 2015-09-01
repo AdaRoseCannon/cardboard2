@@ -46,6 +46,7 @@
     "fast-event-emitter": "0.0.2",
     "gl-vec3": "^1.0.3",
     "three-orbit-controls": "^69.0.5",
+    "tween.js": "^15.0.0",
     "verlet-constraint": "^1.0.3",
     "verlet-point": "^1.2.1"
   }

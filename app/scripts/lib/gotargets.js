@@ -12,12 +12,12 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 	function GoTarget(id, config, node) {
 
 		EventEmitter.call(this);
-		const tSprite = new THREE.Sprite(material);
+		const reticuleSprite = new THREE.Sprite(material);
 		this.id = id;
 
-		node.add(tSprite);
-		tSprite.scale.set(node.scale.x, node.scale.y, node.scale.z);
-		tSprite.name = id;
+		node.add(reticuleSprite);
+		reticuleSprite.scale.set(node.scale.x, node.scale.y, node.scale.z);
+		reticuleSprite.name = id;
 		node.name = id + '_anchor';
 		if (config.text) {
 			this.textSprite = textSprite(config.text, {
@@ -26,10 +26,11 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 				borderThickness: 20
 			});
 			this.textSprite.visible = false;
-			tSprite.add(this.textSprite);
+			reticuleSprite.add(this.textSprite);
 		}
 
-		this.sprite = tSprite;
+		this.sprite = reticuleSprite;
+		this.position = node.position;
 		this._anchor = node;
 		this.hasHover = false;
 
@@ -46,6 +47,14 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 				this.textSprite.visible = false;
 			}
 		});
+
+		this.hide = () =>{
+			this.sprite.visible = false;
+		};
+
+		this.show = () =>{
+			this.sprite.visible = true;
+		};
 	}
 	util.inherits(GoTarget, EventEmitter);
 

@@ -34,6 +34,7 @@ serviceWorker()
 	addScript('./scripts/three.min.js')
 ]))
 .then(() => Promise.all([
+	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/effects/StereoEffect.js'),
 	addScript('https://cdn.rawgit.com/richtr/threeVR/master/js/DeviceOrientationController.js'),
 	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/MarchingCubes.js')
 ]))
@@ -124,10 +125,29 @@ serviceWorker()
 			}).collectGoTargets(three.scene);
 
 			goTargets.targets.GoTarget0.on('click', function () {
-				console.log(this);
+				this.hide();
+				three.walkTo(this.sprite.getWorldPosition());
 			}.bind(goTargets.targets.GoTarget0));
 
 			window.three = three;
+
+			function setUpCardboard() {
+
+				const container = document.body;
+				if (container.requestFullscreen) {
+					container.requestFullscreen();
+				} else if (container.msRequestFullscreen) {
+					container.msRequestFullscreen();
+				} else if (container.mozRequestFullScreen) {
+					container.mozRequestFullScreen();
+				} else if (container.webkitRequestFullscreen) {
+					container.webkitRequestFullscreen();
+				}
+				window.addEventListener('resize', three.useCardboard);
+				window.removeEventListener('click', setUpCardboard);
+			}
+			window.addEventListener('click', setUpCardboard);
+			
 		});
 	});
 });
