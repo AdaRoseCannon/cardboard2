@@ -10,6 +10,9 @@ if (window.location.protocol !== "https:" && window.location.hostname !== 'local
 }
 
 function MyThree(debug = false){
+	
+	THREE.ImageUtils.loadTexture( "images/Sand_1_Diffuse.png" );
+	THREE.ImageUtils.loadTexture( "images/Sand_1_Normal.png" );
 
 	EventEmitter.call(this);
 
@@ -106,7 +109,7 @@ function MyThree(debug = false){
 	this.useCardboard = () => {
 
 		const effect = new THREE.StereoEffect(renderer);
-		effect.eyeSeparation = 0.1;
+		effect.eyeSeparation = 0.008;
 		effect.targetDistance = 0.25;
 		effect.setSize( window.innerWidth, window.innerHeight );
 		this.renderMethod = effect;

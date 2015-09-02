@@ -146,6 +146,8 @@ serviceWorker()
 				container.removeEventListener('click', setUpCardboard);
 			}
 			container.addEventListener('click', setUpCardboard);
+
+			window.three = three;
 		});
 	});
 });
