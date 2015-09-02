@@ -129,11 +129,11 @@ serviceWorker()
 				three.walkTo(this.sprite.getWorldPosition());
 			}.bind(goTargets.targets.GoTarget0));
 
-			window.three = three;
-
+			const container = document.body;
 			function setUpCardboard() {
+				three.useCardboard();
+				window.addEventListener('resize', three.useCardboard);
 
-				const container = document.body;
 				if (container.requestFullscreen) {
 					container.requestFullscreen();
 				} else if (container.msRequestFullscreen) {
@@ -143,11 +143,9 @@ serviceWorker()
 				} else if (container.webkitRequestFullscreen) {
 					container.webkitRequestFullscreen();
 				}
-				window.addEventListener('resize', three.useCardboard);
-				window.removeEventListener('click', setUpCardboard);
+				container.removeEventListener('click', setUpCardboard);
 			}
-			window.addEventListener('click', setUpCardboard);
-			
+			container.addEventListener('click', setUpCardboard);
 		});
 	});
 });

@@ -4,6 +4,11 @@ const EventEmitter = require('fast-event-emitter');
 const fetchJSON = require('./fetchJSON.js');
 const util = require('util');
 
+// no hsts so just redirect to https
+if (window.location.protocol !== "https:" && window.location.hostname !== 'localhost') {
+   window.location.protocol = "https:";
+}
+
 function MyThree(debug = false){
 
 	EventEmitter.call(this);
@@ -34,6 +39,8 @@ function MyThree(debug = false){
 
 	document.body.appendChild(renderer.domElement);
 	this.domElement = renderer.domElement;
+
+
 
 	// const light = new THREE.DirectionalLight( 0xffffff );
 	// light.position.set( 0.5, 1, 0.5 );
@@ -267,7 +274,10 @@ function MyThree(debug = false){
 
 	this.deviceOrientation = () => {
 
-		var controls = new DeviceOrientationController(camera, renderer.domElement);
+		// provide dummy element to prevent touch/click hijacking.
+		var controls = new DeviceOrientationController(camera, document.createElement("DIV"));
+		controls.enableManualDrag = false;
+		controls.enableManualZoom = false;
 		controls.connect();
 		this.on('prerender', () => controls.update());
 	};
