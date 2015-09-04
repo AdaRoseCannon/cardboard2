@@ -111,16 +111,21 @@ serviceWorker()
 			// Set up the GoTargets
 			const goTargets = new GoTargets(three, {
 				"GoTarget0": {
-					id: "GoTarget0",
-					text: "Tap to\nWalk"
+					text: "Tap to\nWalk",
+					sprite: 'reticule.png'
 				},
 				"GoTarget1": {
-					id: "GoTarget1",
-					text: "Walk"
+					text: "Walk",
+					sprite: 'reticule.png'
 				},
 				"GoTarget2": {
-					id: "GoTarget2",
-					text: "Walk"
+					text: "Walk",
+					sprite: 'reticule.png'
+				},
+				"GoTarget3": {
+					text: "Reset",
+					sprite: "moon.png",
+					comment: "moon"
 				}
 			}).collectGoTargets(three.scene);
 

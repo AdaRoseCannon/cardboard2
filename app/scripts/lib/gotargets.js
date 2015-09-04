@@ -6,19 +6,24 @@ const util = require('util');
 /*global THREE*/
 
 module.exports = function GoTargetConfig(three, goTargetsConfig) {
-	const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
-	const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
 
 	function GoTarget(id, config, node) {
 
 		EventEmitter.call(this);
-		const reticuleSprite = new THREE.Sprite(material);
 		this.id = id;
-
-		node.add(reticuleSprite);
-		reticuleSprite.scale.set(node.scale.x, node.scale.y, node.scale.z);
-		reticuleSprite.name = id;
 		node.name = id + '_anchor';
+
+		if (config.sprite) {
+			const map = THREE.ImageUtils.loadTexture( "images/" + config.sprite );
+			const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
+			const reticuleSprite = new THREE.Sprite(material);
+
+			node.add(reticuleSprite);
+			reticuleSprite.scale.set(node.scale.x, node.scale.y, node.scale.z);
+			reticuleSprite.name = id;
+			this.sprite = reticuleSprite;
+		}
+
 		if (config.text) {
 			this.textSprite = textSprite(config.text, {
 				fontsize: 18,
@@ -26,10 +31,9 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 				borderThickness: 20
 			});
 			this.textSprite.visible = false;
-			reticuleSprite.add(this.textSprite);
+			node.add(this.textSprite);
 		}
 
-		this.sprite = reticuleSprite;
 		this.position = node.position;
 		this._anchor = node;
 		this.hasHover = false;
