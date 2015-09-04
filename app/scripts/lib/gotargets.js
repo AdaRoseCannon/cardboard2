@@ -67,7 +67,11 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 	three.on('prerender', () => {
 		const raycaster = new THREE.Raycaster();
 		raycaster.setFromCamera(new THREE.Vector2(0,0), three.camera);
-		const hits = raycaster.intersectObjects(this.getTargets().map(target => target.sprite));
+		const hits = raycaster.intersectObjects(
+			this.getTargets()
+			.map(target => target.sprite)
+			.filter(sprite => sprite.visible)
+		);
 
 		let target = false;
 

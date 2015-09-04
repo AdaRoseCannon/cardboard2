@@ -177,7 +177,7 @@ function MyThree(debug = false){
 
 		/*jshint validthis: true */
 
-		count = count || 1000;
+		count = count || 2000;
 		const height = 20;
 		const width = 100;
 
@@ -189,14 +189,14 @@ function MyThree(debug = false){
 
 			var vertex = new THREE.Vector3();
 			vertex.x = Math.random() * width - width/2;
-			vertex.y = Math.random() * width - width/2;
-			vertex.z = Math.random() * height;
+			vertex.y = Math.random() * height - height/2;
+			vertex.z = Math.random() * width - width/2;
 
 			geometry.vertices.push( vertex );
 
 		}
 
-		const size  = 0.1;
+		const size  = 0.3;
 
 		const material = new THREE.PointCloudMaterial( { size, map } );
 		material.transparent = true;
@@ -278,9 +278,7 @@ function MyThree(debug = false){
 	this.deviceOrientation = () => {
 
 		// provide dummy element to prevent touch/click hijacking.
-		var controls = new DeviceOrientationController(camera, document.createElement("DIV"));
-		controls.enableManualDrag = false;
-		controls.enableManualZoom = false;
+		var controls = new DeviceOrientationController(camera /*, document.createElement("DIV") */);
 		controls.connect();
 		this.on('prerender', () => controls.update());
 	};
