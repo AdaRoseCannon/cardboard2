@@ -135,7 +135,16 @@ serviceWorker()
 			}.bind(goTargets.targets.GoTarget0));
 
 			const container = document.body;
+			const cardboard = document.getElementById('cardboard');
+			cardboard.addEventListener('click', setUpCardboard);
+
+			function removeCardboardButton() {
+				cardboard.style.display = 'none';
+			}
+
+			setTimeout(removeCardboardButton, 5000);
 			function setUpCardboard() {
+				removeCardboardButton();
 				three.useCardboard();
 				window.addEventListener('resize', three.useCardboard);
 
@@ -150,7 +159,6 @@ serviceWorker()
 				}
 				container.removeEventListener('click', setUpCardboard);
 			}
-			container.addEventListener('click', setUpCardboard);
 
 			window.three = three;
 		});
