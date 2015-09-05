@@ -106,6 +106,10 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 	three.domElement.addEventListener('mouseup', interact);
 	three.domElement.addEventListener('touchup', interact);
 	three.domElement.addEventListener('touchdown', interact);
+	three.deviceOrientationController
+	.addEventListener('userinteractionend', function () {
+		interact({type: 'click'});
+	});
 
 	this.getTarget = (id) => {
 		return this.targets[id];

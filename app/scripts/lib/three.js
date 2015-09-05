@@ -305,20 +305,19 @@ function MyThree(debug = false){
 		this.renderMethod.render(scene, camera);
 	};
 
-	let controls;
 	this.deviceOrientation = ({manualControl}) => {
 
 		// provide dummy element to prevent touch/click hijacking.
 		const element = manualControl ? renderer.domElement : document.createElement("DIV");
 
-		if (controls) {
-			controls.disconnect();
-			controls.element = element;
-			controls.connect();
+		if (this.deviceOrientationController) {
+			this.deviceOrientationController.disconnect();
+			this.deviceOrientationController.element = element;
+			this.deviceOrientationController.connect();
 		} else {
-			controls = new DeviceOrientationController(camera, element);
-			controls.connect();
-			this.on('prerender', () => controls.update());
+			this.deviceOrientationController = new DeviceOrientationController(camera, element);
+			this.deviceOrientationController.connect();
+			this.on('prerender', () => this.deviceOrientationController.update());
 		}
 	};
 
