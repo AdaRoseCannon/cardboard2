@@ -305,12 +305,21 @@ function MyThree(debug = false){
 		this.renderMethod.render(scene, camera);
 	};
 
-	this.deviceOrientation = () => {
+	let controls;
+	this.deviceOrientation = ({manualControl}) => {
 
 		// provide dummy element to prevent touch/click hijacking.
-		var controls = new DeviceOrientationController(camera /*, document.createElement("DIV") */);
-		controls.connect();
-		this.on('prerender', () => controls.update());
+		const element = manualControl ? renderer.domElement : document.createElement("DIV");
+
+		if (controls) {
+			controls.disconnect();
+			controls.element = element;
+			controls.connect();
+		} else {
+			controls = new DeviceOrientationController(camera, element);
+			controls.connect();
+			this.on('prerender', () => controls.update());
+		}
 	};
 
 	this.useOrbit = () => {

@@ -49,7 +49,7 @@ serviceWorker()
 	// three.metaballs.init();
 	three.useDust();
 	three.useFog(0x2B0680);
-	three.deviceOrientation();
+	three.deviceOrientation({manualControl: true}); 
 	three.useStars();
 
 	// Run the verlet physics
@@ -160,6 +160,10 @@ serviceWorker()
 
 			setTimeout(removeCardboardButton, 5000);
 			function setUpCardboard() {
+
+				// Stop deviceOrientation.js eating the click events.
+				three.deviceOrientation({manualControl: false}); 
+
 				removeCardboardButton();
 				three.useCardboard();
 				window.addEventListener('resize', three.useCardboard);
