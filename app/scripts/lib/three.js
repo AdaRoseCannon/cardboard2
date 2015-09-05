@@ -3,6 +3,7 @@
 const EventEmitter = require('fast-event-emitter');
 const fetchJSON = require('./fetchJSON.js');
 const util = require('util');
+const TWEEN = require('tween.js');
 
 // no hsts so just redirect to https
 if (window.location.protocol !== "https:" && window.location.hostname !== 'localhost') {
@@ -82,6 +83,8 @@ function MyThree(debug = false){
 		}
 	});
 
+	this.on('prerender', TWEEN.update);
+
 	this.connectPhysicsToThree = (mesh, physicsMesh) => {
 		threeObjectsConnectedToPhysics[physicsMesh.id] = mesh;
 		scene.add(mesh);
@@ -109,7 +112,13 @@ function MyThree(debug = false){
 			.then(sceneIn => require('./fixGeometry').parse(sceneIn));
 
 	this.walkTo = (destination) => {
-		camera.position.set(destination.x, destination.y, destination.z);
+		new TWEEN.Tween( camera.position )
+			.to( destination, 2000 )
+			.easing( TWEEN.Easing.Quadratic.Out )
+			.onUpdate( function () {
+				camera.position.set(this.x, this.y, this.z);
+			})
+			.start();
 	};
 
 	this.getCameraPositionAbove = function (point, ...objects) {
