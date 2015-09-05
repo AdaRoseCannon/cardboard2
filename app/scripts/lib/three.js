@@ -134,8 +134,6 @@ function MyThree(debug = false){
 
 	this.useStars = (count) => {
 
-		/*jshint validthis: true */
-
 		count = count || 100;
 
 		const map = THREE.ImageUtils.loadTexture( "images/star.png" );

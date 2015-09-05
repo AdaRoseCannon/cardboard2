@@ -126,13 +126,25 @@ serviceWorker()
 					text: "Reset",
 					sprite: "moon.png",
 					comment: "moon"
+				},
+				"GoTarget4": {
+					text: "Walk",
+					sprite: 'reticule.png'
 				}
 			}).collectGoTargets(three.scene);
 
-			goTargets.targets.GoTarget0.on('click', function () {
+			function goToTarget() {
+
+				/*jshint validthis: true */
+
 				this.hide();
 				three.walkTo(this.sprite.getWorldPosition());
-			}.bind(goTargets.targets.GoTarget0));
+			}
+
+			goTargets.targets.GoTarget0.on('click', goToTarget.bind(goTargets.targets.GoTarget0));
+			goTargets.targets.GoTarget1.on('click', goToTarget.bind(goTargets.targets.GoTarget1));
+			goTargets.targets.GoTarget2.on('click', goToTarget.bind(goTargets.targets.GoTarget2));
+			goTargets.targets.GoTarget4.on('click', goToTarget.bind(goTargets.targets.GoTarget4));
 
 			const container = document.body;
 			const cardboard = document.getElementById('cardboard');
