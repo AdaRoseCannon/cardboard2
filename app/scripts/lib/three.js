@@ -24,7 +24,7 @@ function MyThree(debug = false){
 	camera.position.set(0, camera.height, 0);
 	camera.lookAt(new THREE.Vector3(0, camera.height, -9));
 	camera.rotation.y += Math.PI;
-	scene.add(camera); // so that objects attatched to the camera get rendered
+	scene.add(camera); // so that physicsObjects attatched to the camera get rendered
 	this.camera = camera;
 
 	const hud = new THREE.Object3D();
@@ -42,17 +42,6 @@ function MyThree(debug = false){
 
 	document.body.appendChild(renderer.domElement);
 	this.domElement = renderer.domElement;
-
-
-
-	// const light = new THREE.DirectionalLight( 0xffffff );
-	// light.position.set( 0.5, 1, 0.5 );
-	// light.castShadow = true;
-	// scene.add( light );
-
-	// const pointLight = new THREE.PointLight( 0xff3300 );
-	// pointLight.position.set( 0, 0, 0 );
-	// scene.add( pointLight );
 
 	const ambientLight = new THREE.AmbientLight( 0x2B0680 );
 	scene.add( ambientLight );
@@ -73,29 +62,28 @@ function MyThree(debug = false){
 		wireframe: new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } )
 	};
 
-	const objects = [];
-	const objectsInScene = {};
+	const physicsObjects = [];
+	const threeObjectsConnectedToPhysics = {};
 	this.updateObjects = newObjects => {
-		objects.splice(0);
-		objects.push.apply(objects, newObjects);
+		physicsObjects.splice(0);
+		physicsObjects.push.apply(physicsObjects, newObjects);
 	};
+	
+	this.on('prerender', function updatePositions() {
 
-	function updatePositions() {
-
-		// iterate over the physics objects
-		for ( let i of objects ) {
+		// iterate over the physics physicsObjects
+		for ( let i of physicsObjects ) {
 			if (i.meta.type !== 'genericObject') continue;
 
-			if (objectsInScene[i.id]) {
-				objectsInScene[i.id].position.set(i.position.x, i.position.y, i.position.z);
-				objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
+			if (threeObjectsConnectedToPhysics[i.id]) {
+				threeObjectsConnectedToPhysics[i.id].position.set(i.position.x, i.position.y, i.position.z);
+				threeObjectsConnectedToPhysics[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
 			}
 		}
-	}
-	this.on('prerender', updatePositions);
+	});
 
 	this.connectPhysicsToThree = (mesh, physicsMesh) => {
-		objectsInScene[physicsMesh.id] = mesh;
+		threeObjectsConnectedToPhysics[physicsMesh.id] = mesh;
 		scene.add(mesh);
 	};
 
@@ -104,7 +92,6 @@ function MyThree(debug = false){
 		const mesh = new THREE.Mesh(geometry, materials.wireframe);
 		return mesh;
 	};
-
 
 	this.useCardboard = () => {
 
@@ -125,8 +112,44 @@ function MyThree(debug = false){
 		camera.position.set(destination.x, destination.y, destination.z);
 	};
 
-	this.addSingle = (id) => {
+	this.getCameraPositionAbove = function (point, ...objects) {
+		const raycaster = new THREE.Raycaster(point, new THREE.Vector3(0, -1, 0), 0, 20);
+		const hits = raycaster.intersectObjects(objects);
+		if (!hits.length) {
+			return Promise.reject();
+		} else {
+			hits[0].point.y += camera.height;
+			return Promise.resolve(hits[0].point);
+		}
+	};
 
+	this.pickObjects = function(root, ...namesIn) {
+
+		const collection = {};
+		const names = new Set(namesIn);
+
+		(function pickObjects(root) {
+			if (root.children) {
+				root.children.forEach(node => {
+					if (names.has(node.name)) {
+						collection[node.name] = node;
+						names.delete(node.name);
+					}
+					if (names.size) {
+						pickObjects(node);
+					}
+				});
+			}
+		})(root);
+
+		if (names.size) {
+			console.warn('Not all objects found: ' + names.values().next().value + ' missing');
+		}
+
+		return collection;
+	};
+
+	this.addSingle = (id) => {
 		const loader = new THREE.JSONLoader();
 		return fetchJSON('models/' + id + '.json')
 			.then(sceneIn => loader.parse(sceneIn));
@@ -237,7 +260,7 @@ function MyThree(debug = false){
 
 			// fill the field with some metaballs
 			var ballx, bally, ballz, subtract = 5;
-			for ( let i of objects ) {
+			for ( let i of physicsObjects ) {
 
 				// Draw metaballs on the points
 				if (i.meta.type !== 'point') continue;
@@ -248,12 +271,12 @@ function MyThree(debug = false){
 				ballz = nTV.z/2 + 0.5;
 
 				if (debug) {
-					if (objectsInScene[i.id]) {
-						objectsInScene[i.id].position.set(nTV.x, nTV.y, nTV.z);
-						objectsInScene[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
+					if (threeObjectsConnectedToPhysics[i.id]) {
+						threeObjectsConnectedToPhysics[i.id].position.set(nTV.x, nTV.y, nTV.z);
+						threeObjectsConnectedToPhysics[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
 					} else {
-						objectsInScene[i.id] = this.addSphere(i.meta.radius / effectSize);
-						effectsLayer.add(objectsInScene[i.id]);
+						threeObjectsConnectedToPhysics[i.id] = this.addSphere(i.meta.radius / effectSize);
+						effectsLayer.add(threeObjectsConnectedToPhysics[i.id]);
 					}
 				}
 

@@ -133,12 +133,16 @@ serviceWorker()
 				}
 			}).collectGoTargets(three.scene);
 
+			const sceneObjects = three.pickObjects(three.scene, 'Desert');
+
 			function goToTarget() {
 
 				/*jshint validthis: true */
 
 				this.hide();
-				three.walkTo(this.sprite.getWorldPosition());
+
+				// Walk to the position above target to maintain a consistent camera height.
+				three.getCameraPositionAbove(this.sprite.getWorldPosition(), sceneObjects.Desert).then(three.walkTo);
 			}
 
 			goTargets.targets.GoTarget0.on('click', goToTarget.bind(goTargets.targets.GoTarget0));
