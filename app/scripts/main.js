@@ -41,6 +41,10 @@ serviceWorker()
 .then(function () {
 	console.log('Ready');
 	const three = new MyThree();
+	
+	THREE.ImageUtils.loadTexture( "images/Sand_1_Diffuse.png" );
+	THREE.ImageUtils.loadTexture( "images/Sand_1_Normal.png" );
+	THREE.ImageUtils.loadTexture( "images/Bake.png" );
 
 	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
@@ -130,10 +134,18 @@ serviceWorker()
 				"GoTarget4": {
 					text: "Walk",
 					sprite: 'reticule.png'
+				},
+				"GoTarget5": {
+					text: "Cross",
+					sprite: 'reticule.png'
+				},
+				"GoTarget6": {
+					text: "Cross",
+					sprite: 'reticule.png'
 				}
 			}).collectGoTargets(three.scene);
 
-			const sceneObjects = three.pickObjects(three.scene, 'Desert');
+			const sceneObjects = three.pickObjects(three.scene, 'Desert', 'Cube.005', 'Cube.007');
 
 			function goToTarget() {
 
@@ -142,13 +154,16 @@ serviceWorker()
 				this.hide();
 
 				// Walk to the position above target to maintain a consistent camera height.
-				three.getCameraPositionAbove(this.sprite.getWorldPosition(), sceneObjects.Desert).then(three.walkTo);
+				three.getCameraPositionAbove(this.sprite.getWorldPosition(), ...Object.keys(sceneObjects).map(k => sceneObjects[k])).then(three.walkTo);
 			}
+			three.getCameraPositionAbove(three.camera.getWorldPosition(), sceneObjects.Desert).then(p => three.position.set(p));
 
 			goTargets.targets.GoTarget0.on('click', goToTarget.bind(goTargets.targets.GoTarget0));
 			goTargets.targets.GoTarget1.on('click', goToTarget.bind(goTargets.targets.GoTarget1));
 			goTargets.targets.GoTarget2.on('click', goToTarget.bind(goTargets.targets.GoTarget2));
 			goTargets.targets.GoTarget4.on('click', goToTarget.bind(goTargets.targets.GoTarget4));
+			goTargets.targets.GoTarget5.on('click', goToTarget.bind(goTargets.targets.GoTarget5));
+			goTargets.targets.GoTarget6.on('click', goToTarget.bind(goTargets.targets.GoTarget6));
 
 			const container = document.body;
 			const cardboard = document.getElementById('cardboard');

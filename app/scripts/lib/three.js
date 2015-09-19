@@ -11,9 +11,6 @@ if (window.location.protocol !== "https:" && window.location.hostname !== 'local
 }
 
 function MyThree(debug = false){
-	
-	THREE.ImageUtils.loadTexture( "images/Sand_1_Diffuse.png" );
-	THREE.ImageUtils.loadTexture( "images/Sand_1_Normal.png" );
 
 	EventEmitter.call(this);
 
@@ -125,7 +122,7 @@ function MyThree(debug = false){
 		const raycaster = new THREE.Raycaster(point, new THREE.Vector3(0, -1, 0), 0, 20);
 		const hits = raycaster.intersectObjects(objects);
 		if (!hits.length) {
-			return Promise.reject();
+			return Promise.reject('No Hit Below Postion');
 		} else {
 			hits[0].point.y += camera.height;
 			return Promise.resolve(hits[0].point);
