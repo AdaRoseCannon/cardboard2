@@ -31,7 +31,8 @@ function serviceWorker() {
 serviceWorker()
 .then(() => Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
-	addScript('./scripts/three.min.js')
+	addScript('./scripts/three.min.js'),
+	fetch('images/Bake.png')
 ]))
 .then(() => Promise.all([
 	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/effects/StereoEffect.js'),
