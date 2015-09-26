@@ -158,7 +158,6 @@ gulp.task('copy-tmp:dist', ['browserify'], () => {
 		gulp.src([
 			'.tmp/**/*.js'
 		])
-		.pipe($.uglify())
 		.pipe(gulp.dest('dist'))
 	]);
 });

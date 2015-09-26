@@ -31,8 +31,7 @@ function serviceWorker() {
 serviceWorker()
 .then(() => Promise.all([
 	addScript('https://polyfill.webservices.ft.com/v1/polyfill.min.js?features=fetch,default'),
-	addScript('./scripts/three.min.js'),
-	fetch('images/Bake.png')
+	addScript('./scripts/three.min.js')
 ]))
 .then(() => Promise.all([
 	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/effects/StereoEffect.js'),
@@ -42,10 +41,6 @@ serviceWorker()
 .then(function () {
 	console.log('Ready');
 	const three = new MyThree();
-	
-	THREE.ImageUtils.loadTexture( "images/Sand_1_Diffuse.png" );
-	THREE.ImageUtils.loadTexture( "images/Sand_1_Normal.png" );
-	THREE.ImageUtils.loadTexture( "images/Bake.png" );
 
 	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
@@ -72,40 +67,7 @@ serviceWorker()
 			requestAnimationFrame(animate);
 		});
 
-		// Add a new point every half second
-		// let i = 0;
-		// setInterval(() => {
-
-		// 	if (i++ < 32) physics.addPoint({
-		// 		position: {x: 0, y: 5, z: 0},
-		// 		velocity: {
-		// 			x: 0.4 * (Math.random() - 0.5),
-		// 			y: 0.4 * (Math.random() - 0),
-		// 			z: 0.4 * (Math.random() - 0.5)
-		// 		},
-		// 		radius: 0.4,
-		// 		mass: 1,
-		// 		meta: {
-		// 			metaball: true
-		// 		}
-		// 	});
-		// }, 500);
-
-		Promise.all([
-			// three.addObject('myfirstscene'),
-			// physics.addObject({
-			// 	id: 'myfirstscene',
-			// 	position: { x: 0, y: 0, z: 0 },
-			// 	mass: 0
-			// }),
-			three.addObject('text')
-		])
-		.then(([turnAround]) => {
-			// three.connectPhysicsToThree(mesh, meshPhysics);
-			
-			// three.scene.add(mesh);
-			three.scene.add(turnAround);
-		})
+		three.addObject('text').then(three.scene.add, e => console.error(e))
 		.then(() => {
 
 			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
@@ -152,7 +114,7 @@ serviceWorker()
 
 				/*jshint validthis: true */
 
-				this.hide();
+				// this.hide();
 
 				// Walk to the position above target to maintain a consistent camera height.
 				three.getCameraPositionAbove(this.sprite.getWorldPosition(), ...Object.keys(sceneObjects).map(k => sceneObjects[k])).then(three.walkTo);
