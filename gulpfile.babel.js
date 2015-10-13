@@ -63,7 +63,7 @@ gulp.task('browserify', ['vendorScripts'], function () {
 	})).then(function () {
 		process.stdout.write('Browserify: Finished all\n');
 	}, function (e) {
-		process.stdout.write(e);
+		process.stdout.write(e.codeFrame + '\n' + e.message);
 	});
 });
 

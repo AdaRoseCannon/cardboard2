@@ -5,21 +5,39 @@ const fetchJSON = require('./fetchJSON.js');
 const util = require('util');
 const TWEEN = require('tween.js');
 
-// no hsts so just redirect to https
-if (window.location.protocol !== "https:" && window.location.hostname !== 'localhost') {
-   window.location.protocol = "https:";
+const materials = {
+	slime: new THREE.MeshLambertMaterial( { color: 0x99ff99, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } ),
+	boring: new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000 } ),
+	wireframe: new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } )
+};
+
+const path = "images/";
+const format = '.jpg';
+const urls = [
+	path + 'px' + format, path + 'nx' + format,
+	path + 'py' + format, path + 'ny' + format,
+	path + 'pz' + format, path + 'nz' + format
+];
+const reflectionCube = THREE.ImageUtils.loadTextureCube( urls );
+reflectionCube.format = THREE.RGBFormat;
+
+var l = new THREE.ObjectLoader();
+const loadScene = (id) => new Promise(function (resolve, reject) {
+	l.load('models/' + id + '.json', resolve, undefined, reject);
+});
+
+function myThreeFromJSON(id) {
+	return loadScene(id).then(s => new MyThree(s));
 }
 
-function MyThree(debug = false){
+function MyThree(scene){
 
 	EventEmitter.call(this);
 
-	const scene = new THREE.Scene();
-	this.scene = scene;
+	this.scene = scene || new THREE.Scene();
 
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
 	camera.height = 2;
-	camera.position.set(0, camera.height, 0);
 	camera.lookAt(new THREE.Vector3(0, camera.height, -9));
 	camera.rotation.y += Math.PI;
 	scene.add(camera); // so that physicsObjects attatched to the camera get rendered
@@ -40,25 +58,6 @@ function MyThree(debug = false){
 
 	document.body.appendChild(renderer.domElement);
 	this.domElement = renderer.domElement;
-
-	const ambientLight = new THREE.AmbientLight( 0x2B0680 );
-	scene.add( ambientLight );
-
-	const path = "images/";
-	const format = '.jpg';
-	const urls = [
-		path + 'px' + format, path + 'nx' + format,
-		path + 'py' + format, path + 'ny' + format,
-		path + 'pz' + format, path + 'nz' + format
-	];
-	const reflectionCube = THREE.ImageUtils.loadTextureCube( urls );
-	reflectionCube.format = THREE.RGBFormat;
-
-	const materials = {
-		slime: new THREE.MeshLambertMaterial( { color: 0x99ff99, specular: 0x440000, envMap: reflectionCube, combine: THREE.MixOperation, reflectivity: 0.3, metal: true } ),
-		boring: new THREE.MeshLambertMaterial( { color: 0xFFFFFF, specular: 0x440000 } ),
-		wireframe: new THREE.MeshBasicMaterial( { color: 0xFFFFFF, wireframe: true } )
-	};
 
 	const physicsObjects = [];
 	const threeObjectsConnectedToPhysics = {};
@@ -105,14 +104,11 @@ function MyThree(debug = false){
 
 	};
 
-	var l = new THREE.ObjectLoader();
-	this.addObject = (id) => new Promise(function (resolve, reject) {
-		l.load('models/' + id + '.json', resolve, undefined, reject);
-	});
+	this.addObject = loadScene;
 
 	this.walkTo = (destination) => {
 		new TWEEN.Tween( camera.position )
-			.to( destination, 2000 )
+			.to( destination, 500 * camera.position.distanceTo(destination) )
 			.easing( TWEEN.Easing.Quadratic.Out )
 			.onUpdate( function () {
 				camera.position.set(this.x, this.y, this.z);
@@ -264,7 +260,6 @@ function MyThree(debug = false){
 			effect.reset();
 			let newP = effectsPosition.getWorldPosition();
 			effectsLayer.position.set(newP.x, newP.y, newP.z);
-			// if (debug) effect.addPlaneY(10, 2);
 
 			// fill the field with some metaballs
 			var ballx, bally, ballz, subtract = 5;
@@ -278,17 +273,7 @@ function MyThree(debug = false){
 				bally = nTV.y/2 + 0.5;
 				ballz = nTV.z/2 + 0.5;
 
-				if (debug) {
-					if (threeObjectsConnectedToPhysics[i.id]) {
-						threeObjectsConnectedToPhysics[i.id].position.set(nTV.x, nTV.y, nTV.z);
-						threeObjectsConnectedToPhysics[i.id].rotation.setFromQuaternion(new THREE.Quaternion(i.quaternion.x, i.quaternion.y, i.quaternion.z, i.quaternion.w));
-					} else {
-						threeObjectsConnectedToPhysics[i.id] = this.addSphere(i.meta.radius / effectSize);
-						effectsLayer.add(threeObjectsConnectedToPhysics[i.id]);
-					}
-				}
-
-				if (!debug) effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.meta.radius/effectSize), subtract);
+				effect.addBall(ballx, bally, ballz, Math.max(0.2, 2*i.meta.radius/effectSize), subtract);
 			}
 		};
 
@@ -332,4 +317,5 @@ function MyThree(debug = false){
 }
 util.inherits(MyThree, EventEmitter);
 
-module.exports = MyThree;
+module.exports.MyThree = MyThree;
+module.exports.myThreeFromJSON = myThreeFromJSON;

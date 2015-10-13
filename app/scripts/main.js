@@ -1,9 +1,13 @@
 /*global THREE*/
 'use strict';
-const MyThree = require('./lib/three');
 const PhysicsWrapper = require('./lib/physicswrapper');
 const addScript = require('./lib/loadScript');
 const GoTargets = require('./lib/gotargets');
+
+// no hsts so just redirect to https
+if (window.location.protocol !== "https:" && window.location.hostname !== 'localhost') {
+   window.location.protocol = "https:";
+}
 
 function serviceWorker() {
 
@@ -16,14 +20,15 @@ function serviceWorker() {
 				console.log('Offlining Availble');
 				resolve();
 			} else {
-				return navigator.serviceWorker.register('./sw.js')
+				navigator.serviceWorker.register('./sw.js')
 				.then(function(reg) {
 					console.log('sw registered', reg);
-					location.reload();
-				});
+				})
+				.then(resolve);
 			}
 		} else {
-			console.error('No Service Worker');
+			console.error('No Service Worker, assets may not be cached');
+			resolve();
 		}
 	});
 }
@@ -38,13 +43,16 @@ serviceWorker()
 	addScript('https://cdn.rawgit.com/richtr/threeVR/master/js/DeviceOrientationController.js'),
 	addScript('https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/MarchingCubes.js')
 ]))
-.then(function () {
+.then(() => require('./lib/three').myThreeFromJSON('text'))
+.then(three => {
 	console.log('Ready');
-	const three = new MyThree();
 
 	const grid = new THREE.GridHelper( 10, 1 );
 	grid.setColors( 0xff0000, 0xffffff );
 	three.scene.add( grid );
+
+	const ambientLight = new THREE.AmbientLight( 0x2B0680 );
+	three.scene.add( ambientLight );
 
 	// three.metaballs.init();
 	three.useDust();
@@ -54,6 +62,13 @@ serviceWorker()
 
 	// Run the verlet physics
 	const physics = new PhysicsWrapper();
+
+	const sceneObjects = three.pickObjects(three.scene, 'floor', 'bridge');
+	const toTexture = three.pickObjects(three.scene, 'floor', 'lighthouse', 'island');
+	
+	Object.keys(toTexture).forEach(name => {
+		toTexture[name].material = new THREE.MeshBasicMaterial({map: THREE.ImageUtils.loadTexture( `models/textures/${name}.png` )});
+	});
 
 	physics.init()
 	.then(function () {
@@ -67,109 +82,128 @@ serviceWorker()
 			requestAnimationFrame(animate);
 		});
 
-		three.addObject('text')
-		.then(o => three.scene.add(o), e => console.error(e))
-		.then(() => {
+		const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
+		const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
+		const sprite = new THREE.Sprite(material);
+		three.hud.add(sprite);
 
-			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
-			const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: false, transparent: true } );
-			const sprite = new THREE.Sprite(material);
-			three.hud.add(sprite);
-
-			// Set up the GoTargets
-			const goTargets = new GoTargets(three, {
-				"GoTarget0": {
-					text: "Tap to\nWalk",
-					sprite: 'reticule.png'
-				},
-				"GoTarget1": {
-					text: "Walk",
-					sprite: 'reticule.png'
-				},
-				"GoTarget2": {
-					text: "Walk",
-					sprite: 'reticule.png'
-				},
-				"GoTarget3": {
-					text: "Reset",
-					sprite: "moon.png",
-					comment: "moon"
-				},
-				"GoTarget4": {
-					text: "Walk",
-					sprite: 'reticule.png'
-				},
-				"GoTarget5": {
-					text: "Cross",
-					sprite: 'reticule.png'
-				},
-				"GoTarget6": {
-					text: "Cross",
-					sprite: 'reticule.png'
-				},
-				"GoTarget7": {
-					sprite: 'reticule.png'
-				},
-				"GoTarget8": {
-					sprite: 'reticule.png'
-				}
-			}).collectGoTargets(three.scene);
-
-			const sceneObjects = three.pickObjects(three.scene, 'floor', 'bridge');
-			const toTexture = three.pickObjects(three.scene, 'floor', 'lighthouse', 'island');
-			window.toTexture = toTexture;
-
-			function goToTarget() {
-
-				/*jshint validthis: true */
-
-				// this.hide();
-
-				// Walk to the position above target to maintain a consistent camera height.
-				three.getCameraPositionAbove(this.sprite.getWorldPosition(), ...Object.keys(sceneObjects).map(k => sceneObjects[k])).then(three.walkTo);
+		// Set up the GoTargets
+		const goTargets = new GoTargets(three, {
+			"GoTarget0": {
+				text: "Tap to\nWalk",
+				sprite: 'reticule.png'
+			},
+			"GoTarget1": {
+				text: "Walk",
+				sprite: 'reticule.png'
+			},
+			"GoTarget2": {
+				text: "Walk",
+				sprite: 'reticule.png'
+			},
+			"GoTarget3": {
+				text: "Reset",
+				sprite: "moon.png",
+				comment: "moon"
+			},
+			"GoTarget4": {
+				text: "Walk",
+				sprite: 'reticule.png'
+			},
+			"GoTarget5": {
+				text: "Cross",
+				sprite: 'reticule.png'
+			},
+			"GoTarget6": {
+				text: "Cross",
+				sprite: 'reticule.png'
+			},
+			"GoTarget7": {
+				sprite: 'reticule.png'
+			},
+			"GoTarget8": {
+				sprite: 'reticule.png'
 			}
-			three.getCameraPositionAbove(three.camera.getWorldPosition(), sceneObjects.floor).then(p => three.camera.position.set(p.x, p.y, p.z));
+		}).collectGoTargets(three.scene);
 
-			goTargets.targets.GoTarget0.on('click', goToTarget.bind(goTargets.targets.GoTarget0));
-			goTargets.targets.GoTarget1.on('click', goToTarget.bind(goTargets.targets.GoTarget1));
-			goTargets.targets.GoTarget2.on('click', goToTarget.bind(goTargets.targets.GoTarget2));
-			goTargets.targets.GoTarget4.on('click', goToTarget.bind(goTargets.targets.GoTarget4));
-			goTargets.targets.GoTarget5.on('click', goToTarget.bind(goTargets.targets.GoTarget5));
-			goTargets.targets.GoTarget6.on('click', goToTarget.bind(goTargets.targets.GoTarget6));
-			goTargets.targets.GoTarget7.on('click', goToTarget.bind(goTargets.targets.GoTarget7));
-			goTargets.targets.GoTarget8.on('click', goToTarget.bind(goTargets.targets.GoTarget8));
+		let movementTargets = [];
 
-			const container = document.body;
-			const cardboard = document.getElementById('cardboard');
-			cardboard.addEventListener('click', setUpCardboard);
+		function goToTargetsInOrder() {
 
-			function removeCardboardButton() {
-				cardboard.style.display = 'none';
+			/*jshint validthis: true */
+
+			this.hide();
+			const nextTarget = movementTargets.shift();
+
+			if (nextTarget) {
+				nextTarget.once('click', goToTargetsInOrder.bind(nextTarget));
+				nextTarget.show();
 			}
 
-			setTimeout(removeCardboardButton, 5000);
-			function setUpCardboard() {
+			// Walk to the position above target to maintain a consistent camera height.
+			three.getCameraPositionAbove(this.sprite.getWorldPosition(), ...Object.keys(sceneObjects).map(k => sceneObjects[k]))
+			.then(three.walkTo);
+		}
 
-				// Stop deviceOrientation.js eating the click events.
-				three.deviceOrientation({manualControl: false}); 
+		function reset() {
+			three.camera.position.set(0, three.camera.height, 0);
+			movementTargets = [
+				goTargets.targets.GoTarget1,
+				goTargets.targets.GoTarget2,
+				goTargets.targets.GoTarget4,
+				goTargets.targets.GoTarget6,
+				goTargets.targets.GoTarget5,
+				goTargets.targets.GoTarget7,
+				goTargets.targets.GoTarget8,
+			];
 
-				removeCardboardButton();
-				three.useCardboard();
-				window.addEventListener('resize', three.useCardboard);
+			goTargets.targets.GoTarget0.off('click');
+			goTargets.targets.GoTarget0.once('click', goToTargetsInOrder.bind(goTargets.targets.GoTarget0));
+			movementTargets.forEach(t => {
+				t.hide();
+				t.off('click');
+			});
+			goTargets.targets.GoTarget0.show();
 
-				if (container.requestFullscreen) {
-					container.requestFullscreen();
-				} else if (container.msRequestFullscreen) {
-					container.msRequestFullscreen();
-				} else if (container.mozRequestFullScreen) {
-					container.mozRequestFullScreen();
-				} else if (container.webkitRequestFullscreen) {
-					container.webkitRequestFullscreen();
-				}
-				container.removeEventListener('click', setUpCardboard);
+		}
+
+		// Set initial properties
+		reset();
+
+		// Make the moon a reset button
+		goTargets.targets.GoTarget3.on('click', reset);
+
+		// Add cardboard button
+		const container = document.body;
+		const cardboard = document.getElementById('cardboard');
+		cardboard.addEventListener('click', setUpCardboard);
+
+		function removeCardboardButton() {
+			cardboard.style.display = 'none';
+		}
+
+		setTimeout(removeCardboardButton, 5000);
+		function setUpCardboard() {
+
+			// Stop deviceOrientation.js eating the click events.
+			three.deviceOrientation({manualControl: false}); 
+
+			removeCardboardButton();
+			three.useCardboard();
+			window.addEventListener('resize', three.useCardboard);
+
+			if (container.requestFullscreen) {
+				container.requestFullscreen();
+			} else if (container.msRequestFullscreen) {
+				container.msRequestFullscreen();
+			} else if (container.mozRequestFullScreen) {
+				container.mozRequestFullScreen();
+			} else if (container.webkitRequestFullscreen) {
+				container.webkitRequestFullscreen();
 			}
+			container.removeEventListener('click', setUpCardboard);
+		}
 
-			window.three = three;
-		});
+		window.three = three;
 	});
 });
