@@ -1,10 +1,11 @@
 // generated on 2015-07-01 using generator-gulp-webapp 1.0.2
+'use strict';
 
 import gulp from 'gulp';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import browserSync from 'browser-sync';
 import del from 'del';
-import {mkdirSync, statSync, readdirSync, createWriteStream} from 'fs';
+import {statSync, readdirSync, createWriteStream} from 'fs';
 import browserify from 'browserify';
 import babelify from 'babelify';
 
@@ -133,7 +134,16 @@ gulp.task('fonts', () => {
 		.pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('extras', () => {
+gulp.task('models', () => {
+	return gulp.src([
+		'app/models/**/*',
+		'!app/models/**/*.{blend,maya}',
+	], {
+		dot: true
+	}).pipe(gulp.dest('dist/models'));
+});
+
+gulp.task('extras', ['models'],() => {
 	return gulp.src([
 		'app/*.*',
 		'!app/*.html',
