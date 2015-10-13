@@ -120,7 +120,7 @@ module.exports = function GoTargetConfig(three, goTargetsConfig) {
 			root.children.forEach(node => {
 				if (node.name.match(/^gotarget\d+$/i)) {
 					const id = node.name;
-					if (!goTargetsConfig[id]) throw('No Config For ' + id);
+					if (!goTargetsConfig[id]) return console.warn('No Config For ' + id);
 					this.targets[id] = new GoTarget(id, goTargetsConfig[id], node);
 				} else {
 					this.collectGoTargets(node);

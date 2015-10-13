@@ -56,7 +56,7 @@ serviceWorker()
 	const physics = new PhysicsWrapper();
 
 	physics.init()
-	.then(function setUpMarching() {
+	.then(function () {
 
 		requestAnimationFrame(function animate() {
 			physics.update()
@@ -67,7 +67,8 @@ serviceWorker()
 			requestAnimationFrame(animate);
 		});
 
-		three.addObject('text').then(three.scene.add, e => console.error(e))
+		three.addObject('text')
+		.then(o => three.scene.add(o), e => console.error(e))
 		.then(() => {
 
 			const map = THREE.ImageUtils.loadTexture( "images/reticule.png" );
@@ -105,10 +106,18 @@ serviceWorker()
 				"GoTarget6": {
 					text: "Cross",
 					sprite: 'reticule.png'
+				},
+				"GoTarget7": {
+					sprite: 'reticule.png'
+				},
+				"GoTarget8": {
+					sprite: 'reticule.png'
 				}
 			}).collectGoTargets(three.scene);
 
-			const sceneObjects = three.pickObjects(three.scene, 'Desert', 'Cube.005', 'Cube.007');
+			const sceneObjects = three.pickObjects(three.scene, 'floor', 'bridge');
+			const toTexture = three.pickObjects(three.scene, 'floor', 'lighthouse', 'island');
+			window.toTexture = toTexture;
 
 			function goToTarget() {
 
@@ -119,7 +128,7 @@ serviceWorker()
 				// Walk to the position above target to maintain a consistent camera height.
 				three.getCameraPositionAbove(this.sprite.getWorldPosition(), ...Object.keys(sceneObjects).map(k => sceneObjects[k])).then(three.walkTo);
 			}
-			three.getCameraPositionAbove(three.camera.getWorldPosition(), sceneObjects.Desert).then(p => three.position.set(p));
+			three.getCameraPositionAbove(three.camera.getWorldPosition(), sceneObjects.floor).then(p => three.camera.position.set(p.x, p.y, p.z));
 
 			goTargets.targets.GoTarget0.on('click', goToTarget.bind(goTargets.targets.GoTarget0));
 			goTargets.targets.GoTarget1.on('click', goToTarget.bind(goTargets.targets.GoTarget1));
@@ -127,6 +136,8 @@ serviceWorker()
 			goTargets.targets.GoTarget4.on('click', goToTarget.bind(goTargets.targets.GoTarget4));
 			goTargets.targets.GoTarget5.on('click', goToTarget.bind(goTargets.targets.GoTarget5));
 			goTargets.targets.GoTarget6.on('click', goToTarget.bind(goTargets.targets.GoTarget6));
+			goTargets.targets.GoTarget7.on('click', goToTarget.bind(goTargets.targets.GoTarget7));
+			goTargets.targets.GoTarget8.on('click', goToTarget.bind(goTargets.targets.GoTarget8));
 
 			const container = document.body;
 			const cardboard = document.getElementById('cardboard');
