@@ -9,6 +9,7 @@
     }
   ],
   "start_url": "index.html",
-  "display": "standalone",
+  "display": "fullscreen",
+  "background_color": "#fff0f5",
   "orientation": "landscape"
 }
