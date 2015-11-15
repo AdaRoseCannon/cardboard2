@@ -16,7 +16,7 @@
     "gulp-autoprefixer": "^3.0.2",
     "gulp-cache": "^0.3.0",
     "gulp-eslint": "^1.0.0",
-    "gulp-gh-pages": "^0.5.3",
+    "gulp-gh-pages": "^0.5.4",
     "gulp-if": "^2.0.0",
     "gulp-imagemin": "^2.2.1",
     "gulp-load-plugins": "^1.0.0-rc.1",
@@ -30,7 +30,6 @@
     "gulp-useref": "^1.1.1",
     "main-bower-files": "^2.5.0",
     "opn": "^3.0.2",
-    "three": "^0.72.0",
     "verlet-system": "^1.0.15"
   },
   "eslintConfig": {
